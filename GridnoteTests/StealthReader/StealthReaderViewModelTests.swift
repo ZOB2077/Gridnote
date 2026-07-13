@@ -112,7 +112,7 @@ final class StealthReaderViewModelTests: XCTestCase {
 
     func testSuperStealthDisplaySizeClampsToSafeBounds() {
         XCTAssertEqual(SuperStealthDisplaySize(width: 80, height: 40), SuperStealthDisplaySize(width: 260, height: 42))
-        XCTAssertEqual(SuperStealthDisplaySize(width: 2000, height: 1000), SuperStealthDisplaySize(width: 1200, height: 600))
+        XCTAssertEqual(SuperStealthDisplaySize(width: 2000, height: 1000), SuperStealthDisplaySize(width: 1800, height: 600))
     }
 
     func testVisibilityActionShowsAReaderThatWasHiddenByFocusLoss() {

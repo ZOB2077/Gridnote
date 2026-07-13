@@ -340,6 +340,13 @@ struct StealthOverlayView: View {
     }
 
     private func fitPage(to size: CGSize) {
+        if controller.superStealthMode {
+            controller.adjustSuperStealthWidth(
+                for: viewModel.pageText,
+                fontSize: viewModel.fontSize,
+                pageHasMoreContent: viewModel.canGoNext
+            )
+        }
         viewModel.fitPage(to: size, maximumLines: controller.superStealthMode ? 1 : nil)
     }
 

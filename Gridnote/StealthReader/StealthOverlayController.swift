@@ -86,7 +86,7 @@ struct FloatingPanelSnapper {
 }
 
 struct SuperStealthDisplaySize: Equatable {
-    static let widthRange: ClosedRange<CGFloat> = 260...1200
+    static let widthRange: ClosedRange<CGFloat> = 260...1800
     // Supports a single readable line at the largest supported reader font size.
     static let heightRange: ClosedRange<CGFloat> = 42...600
     static let `default` = SuperStealthDisplaySize(width: 620, height: 180)
@@ -284,6 +284,22 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
         defaults.set(Double(size.height), forKey: Keys.superStealthHeight)
         guard superStealthMode else { return }
         applyPanelSize(size: NSSize(width: size.width, height: size.height))
+    }
+
+    func adjustSuperStealthWidth(for text: String, fontSize: Double, pageHasMoreContent: Bool) {
+        guard superStealthMode, let panel else { return }
+        let screenWidth = (panel.screen ?? NSScreen.main)?.visibleFrame.width ?? SuperStealthDisplaySize.widthRange.upperBound
+        let availableWidth = min(screenWidth - 28, SuperStealthDisplaySize.widthRange.upperBound)
+        let font: NSFont = viewModel.appearance == .console
+            ? .monospacedSystemFont(ofSize: fontSize, weight: .regular)
+            : .systemFont(ofSize: fontSize, weight: .regular)
+        let measuredTextWidth = NSAttributedString(string: text, attributes: [.font: font]).size().width
+        let textWidth = measuredTextWidth + 32
+        // If the current one-line page still has more text, consume the available screen width first.
+        let desiredWidth = pageHasMoreContent ? availableWidth : min(textWidth, availableWidth)
+        let targetWidth = min(max(desiredWidth, SuperStealthDisplaySize.widthRange.lowerBound), availableWidth)
+        guard abs(panel.frame.width - targetWidth) > 2 else { return }
+        applyPanelSize(size: NSSize(width: targetWidth, height: panel.frame.height))
     }
 
     func setHidesOnAppResignActive(_ enabled: Bool) {
