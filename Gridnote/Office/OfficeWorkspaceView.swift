@@ -1,3 +1,4 @@
+import Foundation
 import SwiftData
 import SwiftUI
 
@@ -19,6 +20,7 @@ private struct OfficeWorkspaceContent: View {
     @State private var findQuery = ""
     @State private var findMessage = ""
     @State private var actionStatus = ""
+    @State private var formulaMaskTask: Task<Void, Never>?
     private let context: ModelContext
 
     init(context: ModelContext) {
@@ -53,18 +55,20 @@ private struct OfficeWorkspaceContent: View {
             handleLaunchFixtureIfNeeded()
             viewModel.load(bookID: appState.selectedBookID)
             writeReadyMarkerIfRequested()
+            scheduleFormulaMask()
         }
         .onReceive(NotificationCenter.default.publisher(for: .gridnotePrivacyShieldRequested)) { _ in
+            formulaMaskTask?.cancel()
             viewModel.concealExcerpt()
         }
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteReaderSettingsDidChange)) { _ in
             viewModel.reloadReaderPresentation()
         }
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficePreviousExcerptRequested)) { _ in
-            viewModel.previousExcerpt()
+            previousExcerpt()
         }
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficeNextExcerptRequested)) { _ in
-            viewModel.nextExcerpt()
+            nextExcerpt()
         }
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficeSearchRequested)) { _ in
             isFindBarPresented = true
@@ -73,6 +77,15 @@ private struct OfficeWorkspaceContent: View {
             guard let isAdded = viewModel.toggleBookmark() else { return }
             actionStatus = isAdded ? "已添加标记" : "已取消标记"
         }
+        .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficePrivacySettingsDidChange)) { _ in
+            formulaMaskTask?.cancel()
+            if OfficeFormulaMaskSettings.isEnabled {
+                scheduleFormulaMask()
+            } else {
+                viewModel.revealExcerpt()
+            }
+        }
+        .onDisappear { formulaMaskTask?.cancel() }
     }
 
     private var officeToolbar: some View {
@@ -146,10 +159,10 @@ private struct OfficeWorkspaceContent: View {
 
     private var utilityControls: some View {
         HStack(spacing: 11) {
-            Button(action: viewModel.previousExcerpt) { Image(systemName: "chevron.left") }
+            Button(action: previousExcerpt) { Image(systemName: "chevron.left") }
                 .help("Previous Text (F7 by default)")
                 .accessibilityIdentifier("office-excerpt-previous")
-            Button(action: viewModel.nextExcerpt) { Image(systemName: "chevron.right") }
+            Button(action: nextExcerpt) { Image(systemName: "chevron.right") }
                 .help("Next Text (F8 by default)")
                 .accessibilityIdentifier("office-excerpt-next")
             Button { isImporterPresented = true } label: { Image(systemName: "square.and.arrow.down") }
@@ -181,7 +194,7 @@ private struct OfficeWorkspaceContent: View {
                         .lineLimit(2)
                         .multilineTextAlignment(.leading)
                         .textSelection(.enabled)
-                        .onTapGesture { viewModel.revealExcerpt() }
+                        .onTapGesture { revealFormulaBar() }
                 } else {
                     TextField("Cell value", text: Binding(get: { viewModel.selectedValue }, set: { viewModel.updateSelectedValue($0) }))
                         .textFieldStyle(.plain)
@@ -225,7 +238,35 @@ private struct OfficeWorkspaceContent: View {
     }
 
     private func find(_ direction: OfficeExcerptSearchDirection) {
-        findMessage = viewModel.searchExcerpt(for: findQuery, direction: direction) ? "已定位到匹配项" : "未找到匹配项"
+        let isMatch = viewModel.searchExcerpt(for: findQuery, direction: direction)
+        findMessage = isMatch ? "已定位到匹配项" : "未找到匹配项"
+        if isMatch { scheduleFormulaMask() }
+    }
+
+    private func previousExcerpt() {
+        viewModel.previousExcerpt()
+        scheduleFormulaMask()
+    }
+
+    private func nextExcerpt() {
+        viewModel.nextExcerpt()
+        scheduleFormulaMask()
+    }
+
+    private func revealFormulaBar() {
+        viewModel.revealExcerpt()
+        scheduleFormulaMask()
+    }
+
+    private func scheduleFormulaMask() {
+        formulaMaskTask?.cancel()
+        guard OfficeFormulaMaskSettings.isEnabled, viewModel.hasFormulaExcerpt else { return }
+        let delay = OfficeFormulaMaskSettings.delay
+        formulaMaskTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(delay))
+            guard !Task.isCancelled else { return }
+            viewModel.concealExcerpt()
+        }
     }
 
     private var spreadsheet: some View {
@@ -331,6 +372,29 @@ private struct OfficeWorkspaceContent: View {
 enum OfficeExcerptSearchDirection {
     case previous
     case next
+}
+
+enum OfficeFormulaMaskSettings {
+    static let delayRange: ClosedRange<Double> = 3...30
+    static let defaultDelay = 8.0
+    private static let enabledKey = "officePrivacy.autoMaskFormulaBar"
+    private static let delayKey = "officePrivacy.formulaBarMaskDelay"
+
+    static func isEnabled(in defaults: UserDefaults = .standard) -> Bool {
+        defaults.object(forKey: enabledKey) as? Bool ?? true
+    }
+
+    static func delay(in defaults: UserDefaults = .standard) -> Double {
+        min(max(defaults.object(forKey: delayKey) as? Double ?? defaultDelay, delayRange.lowerBound), delayRange.upperBound)
+    }
+
+    static var isEnabled: Bool { isEnabled(in: .standard) }
+    static var delay: Double { delay(in: .standard) }
+
+    static func save(enabled: Bool, delay: Double, to defaults: UserDefaults = .standard) {
+        defaults.set(enabled, forKey: enabledKey)
+        defaults.set(min(max(delay, delayRange.lowerBound), delayRange.upperBound), forKey: delayKey)
+    }
 }
 
 enum OfficeExcerptSearch {

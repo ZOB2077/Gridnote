@@ -79,6 +79,23 @@ private struct SettingsContent: View {
                 } else {
                     ContentUnavailableView("No active book", systemImage: "doc")
                 }
+
+                Divider()
+                Toggle("自动遮蔽公式栏正文", isOn: $viewModel.autoMaskFormulaBar)
+                if viewModel.autoMaskFormulaBar {
+                    LabeledContent("自动遮蔽延迟") {
+                        HStack(spacing: 8) {
+                            Slider(value: $viewModel.formulaBarMaskDelay, in: OfficeFormulaMaskSettings.delayRange, step: 1)
+                            Text("\(Int(viewModel.formulaBarMaskDelay.rounded())) 秒")
+                                .monospacedDigit()
+                                .frame(width: 42, alignment: .trailing)
+                        }
+                    }
+                }
+                Text("停止操作后，公式栏正文会替换为业务备注。翻页、查找或点击公式栏可立即恢复。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button("保存办公隐私设置") { viewModel.saveOfficePrivacySettings() }
             }
             .padding(20)
             .tabItem { Label("Office", systemImage: "tablecells") }
@@ -129,6 +146,8 @@ final class SettingsViewModel: ObservableObject {
     @Published var autoSwitch = false
     @Published var textColor = ReaderPresentationSettings.textColor
     @Published var textOpacity = ReaderPresentationSettings.textOpacity
+    @Published var autoMaskFormulaBar = OfficeFormulaMaskSettings.isEnabled
+    @Published var formulaBarMaskDelay = OfficeFormulaMaskSettings.delay
     @Published var message: String?
     private let context: ModelContext
 
@@ -143,6 +162,8 @@ final class SettingsViewModel: ObservableObject {
             autoSwitch = settings.resignToOfficeOnDeactivate
             textColor = ReaderPresentationSettings.textColor
             textOpacity = ReaderPresentationSettings.textOpacity
+            autoMaskFormulaBar = OfficeFormulaMaskSettings.isEnabled
+            formulaBarMaskDelay = OfficeFormulaMaskSettings.delay
             if let bookID, let alias = try AliasProfileRepository(context: context).fetch(bookID: bookID) {
                 aliasTitle = alias.aliasTitle
                 workbookTitle = alias.workbookTitle
@@ -175,9 +196,16 @@ final class SettingsViewModel: ObservableObject {
             message = String(localized: "Office settings saved")
         } catch { message = error.localizedDescription }
     }
+
+    func saveOfficePrivacySettings() {
+        OfficeFormulaMaskSettings.save(enabled: autoMaskFormulaBar, delay: formulaBarMaskDelay)
+        NotificationCenter.default.post(name: .gridnoteOfficePrivacySettingsDidChange, object: nil)
+        message = "办公隐私设置已保存"
+    }
 }
 
 extension Notification.Name {
     static let gridnoteAliasDidChange = Notification.Name("GridnoteAliasDidChange")
     static let gridnoteReaderSettingsDidChange = Notification.Name("GridnoteReaderSettingsDidChange")
+    static let gridnoteOfficePrivacySettingsDidChange = Notification.Name("GridnoteOfficePrivacySettingsDidChange")
 }

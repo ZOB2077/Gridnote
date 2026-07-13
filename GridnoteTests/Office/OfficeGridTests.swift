@@ -68,4 +68,17 @@ final class OfficeGridTests: XCTestCase {
             OfficeExcerptSearch.matchingBlockIndex(in: blocks, query: "不存在", currentIndex: 0, direction: .next)
         )
     }
+
+    func testFormulaMaskSettingsDefaultAndClampValues() {
+        let suiteName = "gridnote-office-privacy-\(UUID().uuidString)"
+        let defaults = try! XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        XCTAssertTrue(OfficeFormulaMaskSettings.isEnabled(in: defaults))
+        XCTAssertEqual(OfficeFormulaMaskSettings.delay(in: defaults), OfficeFormulaMaskSettings.defaultDelay)
+
+        OfficeFormulaMaskSettings.save(enabled: false, delay: 100, to: defaults)
+        XCTAssertFalse(OfficeFormulaMaskSettings.isEnabled(in: defaults))
+        XCTAssertEqual(OfficeFormulaMaskSettings.delay(in: defaults), OfficeFormulaMaskSettings.delayRange.upperBound)
+    }
 }
