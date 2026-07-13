@@ -87,7 +87,8 @@ struct FloatingPanelSnapper {
 
 struct SuperStealthDisplaySize: Equatable {
     static let widthRange: ClosedRange<CGFloat> = 260...1200
-    static let heightRange: ClosedRange<CGFloat> = 80...600
+    // Supports a single readable line at the largest supported reader font size.
+    static let heightRange: ClosedRange<CGFloat> = 42...600
     static let `default` = SuperStealthDisplaySize(width: 620, height: 180)
 
     let width: CGFloat

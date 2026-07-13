@@ -114,9 +114,11 @@ struct StealthOverlayView: View {
                         .font(.system(size: viewModel.fontSize, weight: .regular, design: bodyDesign))
                         .lineSpacing(viewModel.lineSpacing)
                         .foregroundStyle(viewModel.textColor.opacity(viewModel.textOpacity))
+                        .lineLimit(controller.superStealthMode ? 1 : nil)
+                        .truncationMode(.tail)
                         .textSelection(.enabled)
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 13)
+                        .padding(.vertical, controller.superStealthMode ? 4 : 13)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                         .offset(x: pageDragOffset)
                         .transition(pageTransition)
@@ -130,10 +132,11 @@ struct StealthOverlayView: View {
                 }
                 .clipped()
                 .animation(.snappy(duration: 0.22, extraBounce: 0.02), value: viewModel.pageRevision)
-                .onAppear { viewModel.fitPage(to: proxy.size) }
-                .onChange(of: proxy.size) { _, size in viewModel.fitPage(to: size) }
-                .onChange(of: viewModel.fontSize) { _, _ in viewModel.fitPage(to: proxy.size) }
-                .onChange(of: viewModel.lineSpacing) { _, _ in viewModel.fitPage(to: proxy.size) }
+                .onAppear { fitPage(to: proxy.size) }
+                .onChange(of: proxy.size) { _, size in fitPage(to: size) }
+                .onChange(of: viewModel.fontSize) { _, _ in fitPage(to: proxy.size) }
+                .onChange(of: viewModel.lineSpacing) { _, _ in fitPage(to: proxy.size) }
+                .onChange(of: controller.superStealthMode) { _, _ in fitPage(to: proxy.size) }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -334,6 +337,10 @@ struct StealthOverlayView: View {
             insertion: .move(edge: insertion).combined(with: .opacity),
             removal: .move(edge: removal).combined(with: .opacity)
         )
+    }
+
+    private func fitPage(to size: CGSize) {
+        viewModel.fitPage(to: size, maximumLines: controller.superStealthMode ? 1 : nil)
     }
 
     @ViewBuilder

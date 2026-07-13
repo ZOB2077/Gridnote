@@ -58,6 +58,19 @@ final class StealthReaderViewModelTests: XCTestCase {
         XCTAssertGreaterThan(viewModel.charactersPerPage, compactCapacity)
     }
 
+    func testSuperStealthPageFitCanConstrainToOneLine() throws {
+        let container = try GridnoteModelContainer.make(inMemory: true)
+        let suiteName = "gridnote-one-line-fit-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let viewModel = StealthReaderViewModel(context: ModelContext(container), defaults: defaults)
+
+        viewModel.fitPage(to: CGSize(width: 620, height: 42), maximumLines: 1)
+
+        XCTAssertLessThan(viewModel.charactersPerPage, 80)
+        XCTAssertGreaterThanOrEqual(viewModel.charactersPerPage, 8)
+    }
+
     func testReloadPresentationSettingsUsesPersistedReaderAppearance() throws {
         let container = try GridnoteModelContainer.make(inMemory: true)
         let suiteName = "gridnote-presentation-tests-\(UUID().uuidString)"
@@ -98,7 +111,7 @@ final class StealthReaderViewModelTests: XCTestCase {
     }
 
     func testSuperStealthDisplaySizeClampsToSafeBounds() {
-        XCTAssertEqual(SuperStealthDisplaySize(width: 80, height: 40), SuperStealthDisplaySize(width: 260, height: 80))
+        XCTAssertEqual(SuperStealthDisplaySize(width: 80, height: 40), SuperStealthDisplaySize(width: 260, height: 42))
         XCTAssertEqual(SuperStealthDisplaySize(width: 2000, height: 1000), SuperStealthDisplaySize(width: 1200, height: 600))
     }
 

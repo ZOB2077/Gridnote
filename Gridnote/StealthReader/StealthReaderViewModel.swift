@@ -264,14 +264,16 @@ final class StealthReaderViewModel: ObservableObject {
     }
 
     /// Keeps each page inside the current floating panel instead of relying on vertical scrolling.
-    func fitPage(to size: CGSize) {
+    func fitPage(to size: CGSize, maximumLines: Int? = nil) {
         let usableWidth = max(size.width - 32, 120)
-        let usableHeight = max(size.height - 26, 60)
+        let usableHeight = max(size.height - (maximumLines == nil ? 26 : 8), 16)
         let estimatedCharacterWidth = max(fontSize * 0.68, 7)
         let estimatedLineHeight = max(fontSize + lineSpacing + 7, 16)
         let charactersPerLine = max(8, Int(usableWidth / estimatedCharacterWidth))
-        let visibleLines = max(3, Int(usableHeight / estimatedLineHeight))
-        let fittedCapacity = min(max(charactersPerLine * visibleLines, 80), 1600)
+        let fittedLines = max(1, Int(usableHeight / estimatedLineHeight))
+        let visibleLines = maximumLines.map { min(fittedLines, max($0, 1)) } ?? max(3, fittedLines)
+        let minimumCapacity = maximumLines == nil ? 80 : 8
+        let fittedCapacity = min(max(charactersPerLine * visibleLines, minimumCapacity), 1600)
 
         guard fittedCapacity != charactersPerPage else { return }
         charactersPerPage = fittedCapacity
