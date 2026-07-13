@@ -104,4 +104,23 @@ final class StealthReaderViewModelTests: XCTestCase {
         XCTAssertTrue(FloatingReaderVisibilityAction.shouldShow(isVisible: false))
         XCTAssertFalse(FloatingReaderVisibilityAction.shouldShow(isVisible: true))
     }
+
+    func testShortcutRoutingUsesOfficeFormulaBarWhenFloatingReaderIsHidden() {
+        XCTAssertEqual(
+            StealthShortcutRouter.route(for: .previous, isFloatingReaderVisible: false, isGridnoteActive: true),
+            .officeWorkspace
+        )
+        XCTAssertEqual(
+            StealthShortcutRouter.route(for: .next, isFloatingReaderVisible: true, isGridnoteActive: true),
+            .floatingReader
+        )
+        XCTAssertEqual(
+            StealthShortcutRouter.route(for: .next, isFloatingReaderVisible: false, isGridnoteActive: false),
+            .none
+        )
+        XCTAssertEqual(
+            StealthShortcutRouter.route(for: .hide, isFloatingReaderVisible: false, isGridnoteActive: true),
+            .toggleFloatingReader
+        )
+    }
 }

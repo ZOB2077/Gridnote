@@ -32,7 +32,10 @@ struct AppShellView: View {
         }
         .sheet(isPresented: $isLibraryPresented) { LibraryView() }
         .sheet(isPresented: $isSettingsPresented) { SettingsView() }
-        .task(id: appState.selectedBookID) { updateWindowTitle() }
+        .task(id: appState.selectedBookID) {
+            updateWindowTitle()
+            stealthController.setCurrentBook(appState.selectedBookID)
+        }
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteAliasDidChange)) { _ in updateWindowTitle() }
     }
 

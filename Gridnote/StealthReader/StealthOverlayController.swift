@@ -103,6 +103,29 @@ enum FloatingReaderVisibilityAction {
     static func shouldShow(isVisible: Bool) -> Bool { !isVisible }
 }
 
+enum StealthShortcutRoute: Equatable {
+    case floatingReader
+    case officeWorkspace
+    case toggleFloatingReader
+    case none
+}
+
+enum StealthShortcutRouter {
+    static func route(
+        for action: StealthShortcutAction,
+        isFloatingReaderVisible: Bool,
+        isGridnoteActive: Bool
+    ) -> StealthShortcutRoute {
+        switch action {
+        case .hide:
+            return .toggleFloatingReader
+        case .previous, .next:
+            if isFloatingReaderVisible { return .floatingReader }
+            return isGridnoteActive ? .officeWorkspace : .none
+        }
+    }
+}
+
 @MainActor
 final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObject {
     let viewModel: StealthReaderViewModel
@@ -192,6 +215,10 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
 
     func next() { viewModel.next() }
     func previous() { viewModel.previous() }
+
+    func setCurrentBook(_ bookID: UUID?) {
+        lastBookID = bookID
+    }
 
     func toggleVisibility() {
         if FloatingReaderVisibilityAction.shouldShow(isVisible: panel?.isVisible == true) {
@@ -391,10 +418,23 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
     }
 
     private func performGlobalAction(_ action: StealthShortcutAction) {
-        switch action {
-        case .previous: previous()
-        case .next: next()
-        case .hide: toggleVisibility()
+        switch StealthShortcutRouter.route(
+            for: action,
+            isFloatingReaderVisible: panel?.isVisible == true,
+            isGridnoteActive: NSApp.isActive
+        ) {
+        case .floatingReader:
+            if action == .previous { previous() }
+            if action == .next { next() }
+        case .officeWorkspace:
+            let notification: Notification.Name = action == .previous
+                ? .gridnoteOfficePreviousExcerptRequested
+                : .gridnoteOfficeNextExcerptRequested
+            NotificationCenter.default.post(name: notification, object: nil)
+        case .toggleFloatingReader:
+            toggleVisibility()
+        case .none:
+            break
         }
     }
 
@@ -407,4 +447,6 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
 extension Notification.Name {
     static let gridnoteStealthSearchRequested = Notification.Name("GridnoteStealthSearchRequested")
     static let gridnotePrivacyShieldRequested = Notification.Name("GridnotePrivacyShieldRequested")
+    static let gridnoteOfficePreviousExcerptRequested = Notification.Name("GridnoteOfficePreviousExcerptRequested")
+    static let gridnoteOfficeNextExcerptRequested = Notification.Name("GridnoteOfficeNextExcerptRequested")
 }

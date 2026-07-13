@@ -55,6 +55,12 @@ private struct OfficeWorkspaceContent: View {
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteReaderSettingsDidChange)) { _ in
             viewModel.reloadReaderPresentation()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficePreviousExcerptRequested)) { _ in
+            viewModel.previousExcerpt()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficeNextExcerptRequested)) { _ in
+            viewModel.nextExcerpt()
+        }
     }
 
     private var officeToolbar: some View {
@@ -129,10 +135,10 @@ private struct OfficeWorkspaceContent: View {
     private var utilityControls: some View {
         HStack(spacing: 11) {
             Button(action: viewModel.previousExcerpt) { Image(systemName: "chevron.left") }
-                .help("Previous Text")
+                .help("Previous Text (F7 by default)")
                 .accessibilityIdentifier("office-excerpt-previous")
             Button(action: viewModel.nextExcerpt) { Image(systemName: "chevron.right") }
-                .help("Next Text")
+                .help("Next Text (F8 by default)")
                 .accessibilityIdentifier("office-excerpt-next")
             Button { isImporterPresented = true } label: { Image(systemName: "square.and.arrow.down") }
                 .help("Import Book")
