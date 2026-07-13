@@ -205,7 +205,6 @@ private struct OfficeWorkspaceContent: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            utilityControls
         }
         .padding(.horizontal, 12).frame(height: formulaBarHeight)
         .background(.white)

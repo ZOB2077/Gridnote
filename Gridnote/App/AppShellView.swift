@@ -15,18 +15,18 @@ struct AppShellView: View {
         .background(WindowTitleView(title: windowTitle).frame(width: 0, height: 0))
         .toolbar {
             ToolbarItem {
-                Button { isLibraryPresented = true } label: { Image(systemName: "books.vertical") }
-                    .help("Library")
+                Button { isLibraryPresented = true } label: { Image(systemName: "tray.full") }
+                    .help("Data Files")
                     .accessibilityIdentifier("show-library")
             }
             ToolbarItem {
-                Button { isSettingsPresented = true } label: { Image(systemName: "gearshape") }
-                    .help("Settings")
+                Button { isSettingsPresented = true } label: { Image(systemName: "slider.horizontal.3") }
+                    .help("Workspace Options")
                     .accessibilityIdentifier("show-settings")
             }
             ToolbarItem {
-                Button(action: showStealthReader) { Image(systemName: "rectangle.on.rectangle") }
-                    .help("Floating Reader")
+                Button(action: showStealthReader) { Image(systemName: "rectangle.dashed") }
+                    .help("Quick Panel")
                     .accessibilityIdentifier("show-floating-reader")
             }
         }
