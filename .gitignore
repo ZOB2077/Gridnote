@@ -1,0 +1,19 @@
+.DS_Store
+build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+
+# Xcode and Swift Package Manager local state
+.build/
+*.xcscmblueprint
+*.moved-aside
+*.swp
+*.swo
+
+# Local configuration, release artifacts, and generated design scratch files
+.env
+.env.*
+*.dmg
+*.zip
+tmp/

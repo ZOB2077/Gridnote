@@ -1,0 +1,338 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* GridnoteApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000001 /* GridnoteApp.swift */; };
+		A10000000000000000000002 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* AppState.swift */; };
+		A10000000000000000000003 /* AppShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000003 /* AppShellView.swift */; };
+		A10000000000000000000004 /* OfficeWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* OfficeWorkspaceView.swift */; };
+		A10000000000000000000005 /* ReaderWorkspaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000005 /* ReaderWorkspaceView.swift */; };
+		A10000000000000000000006 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* LibraryView.swift */; };
+		A10000000000000000000007 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000007 /* SettingsView.swift */; };
+		A10000000000000000000008 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* SwiftUI.framework */; };
+		A10000000000000000000009 /* AppStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000009 /* AppStateTests.swift */; };
+		A10000000000000000000010 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000021 /* XCTest.framework */; };
+		A10000000000000000000011 /* LaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* LaunchTests.swift */; };
+		A10000000000000000000012 /* XCTest.framework in UI Test Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000021 /* XCTest.framework */; };
+		A10000000000000000000013 /* BookFormat.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000030 /* BookFormat.swift */; };
+		A10000000000000000000014 /* BookMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000031 /* BookMetadata.swift */; };
+		A10000000000000000000015 /* AliasProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000032 /* AliasProfile.swift */; };
+		A10000000000000000000016 /* ReadingLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000033 /* ReadingLocator.swift */; };
+		A10000000000000000000017 /* GridnoteError.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000034 /* GridnoteError.swift */; };
+		A10000000000000000000018 /* BookRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000035 /* BookRecord.swift */; };
+		A10000000000000000000019 /* AliasProfileRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000036 /* AliasProfileRecord.swift */; };
+		A10000000000000000000020 /* ReadingProgressRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000037 /* ReadingProgressRecord.swift */; };
+		A10000000000000000000021 /* AppSettingsRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000038 /* AppSettingsRecord.swift */; };
+		A10000000000000000000022 /* OfficeSheetRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000039 /* OfficeSheetRecord.swift */; };
+		A10000000000000000000023 /* WorkspaceSessionRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000040 /* WorkspaceSessionRecord.swift */; };
+		A10000000000000000000024 /* GridnoteModelContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000041 /* GridnoteModelContainer.swift */; };
+		A10000000000000000000025 /* BookRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000042 /* BookRepository.swift */; };
+		A10000000000000000000026 /* AliasProfileRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000043 /* AliasProfileRepository.swift */; };
+		A10000000000000000000027 /* ReadingProgressRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000044 /* ReadingProgressRepository.swift */; };
+		A10000000000000000000028 /* ReadingLocatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000045 /* ReadingLocatorTests.swift */; };
+		A10000000000000000000029 /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000046 /* PersistenceTests.swift */; };
+		A10000000000000000000030 /* SwiftData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A20000000000000000000022 /* SwiftData.framework */; };
+		A10000000000000000000031 /* SourceStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000047 /* SourceStatus.swift */; };
+		A10000000000000000000032 /* BookmarkStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000048 /* BookmarkStore.swift */; };
+		A10000000000000000000033 /* ImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000049 /* ImportService.swift */; };
+		A10000000000000000000034 /* ImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000050 /* ImportServiceTests.swift */; };
+		A10000000000000000000035 /* BookDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000051 /* BookDocument.swift */; };
+		A10000000000000000000036 /* BookDocumentParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000052 /* BookDocumentParser.swift */; };
+		A10000000000000000000037 /* TXTParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000053 /* TXTParser.swift */; };
+		A10000000000000000000038 /* TextParseCacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000054 /* TextParseCacheStore.swift */; };
+		A10000000000000000000039 /* TXTParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000055 /* TXTParserTests.swift */; };
+		A10000000000000000000040 /* AppSettingsRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000056 /* AppSettingsRepository.swift */; };
+		A10000000000000000000041 /* ReaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000057 /* ReaderViewModel.swift */; };
+		A10000000000000000000042 /* ReaderViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000058 /* ReaderViewModelTests.swift */; };
+		A10000000000000000000043 /* EPUBArchive.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000059 /* EPUBArchive.swift */; };
+		A10000000000000000000044 /* EPUBParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000060 /* EPUBParser.swift */; };
+		A10000000000000000000045 /* EPUBParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000061 /* EPUBParserTests.swift */; };
+		A10000000000000000000049 /* LibraryRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000065 /* LibraryRepositoryTests.swift */; };
+		A10000000000000000000050 /* LibraryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000066 /* LibraryRepository.swift */; };
+		A10000000000000000000051 /* OfficeGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000067 /* OfficeGrid.swift */; };
+		A10000000000000000000052 /* OfficeSheetRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000068 /* OfficeSheetRepository.swift */; };
+		A10000000000000000000053 /* OfficeGridTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000069 /* OfficeGridTests.swift */; };
+		A10000000000000000000054 /* ExcerptInjectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000070 /* ExcerptInjectorTests.swift */; };
+		A10000000000000000000055 /* ExcerptInjector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000071 /* ExcerptInjector.swift */; };
+		A10000000000000000000056 /* WindowTitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000072 /* WindowTitleView.swift */; };
+		A10000000000000000000057 /* SettingsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000073 /* SettingsViewModelTests.swift */; };
+		A10000000000000000000058 /* ReleaseFixtureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000074 /* ReleaseFixtureTests.swift */; };
+		A10000000000000000000059 /* PerformanceStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000075 /* PerformanceStateTests.swift */; };
+		A10000000000000000000060 /* Fixtures in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000076 /* Fixtures */; };
+		A10000000000000000000061 /* StealthReaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000077 /* StealthReaderViewModel.swift */; };
+		A10000000000000000000062 /* StealthOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000078 /* StealthOverlayView.swift */; };
+		A10000000000000000000063 /* StealthOverlayController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000079 /* StealthOverlayController.swift */; };
+		A10000000000000000000064 /* StealthMenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000080 /* StealthMenuBarView.swift */; };
+		A10000000000000000000065 /* StealthReaderViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000081 /* StealthReaderViewModelTests.swift */; };
+		A10000000000000000000066 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000082 /* Localizable.xcstrings */; };
+		A10000000000000000000067 /* ReadingBookmarkRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000083 /* ReadingBookmarkRecord.swift */; };
+		A10000000000000000000068 /* ReadingBookmarkRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000084 /* ReadingBookmarkRepository.swift */; };
+		A10000000000000000000069 /* ReaderPresentationSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000085 /* ReaderPresentationSettings.swift */; };
+		A10000000000000000000070 /* ReadingBookmarkRepositoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000086 /* ReadingBookmarkRepositoryTests.swift */; };
+		A10000000000000000000071 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000087 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A20000000000000000000001 /* GridnoteApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridnoteApp.swift; sourceTree = "<group>"; };
+		A20000000000000000000002 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		A20000000000000000000003 /* AppShellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppShellView.swift; sourceTree = "<group>"; };
+		A20000000000000000000004 /* OfficeWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeWorkspaceView.swift; sourceTree = "<group>"; };
+		A20000000000000000000005 /* ReaderWorkspaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderWorkspaceView.swift; sourceTree = "<group>"; };
+		A20000000000000000000006 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		A20000000000000000000007 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		A20000000000000000000008 /* Gridnote.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Gridnote.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000009 /* AppStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000010 /* LaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LaunchTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000011 /* GridnoteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GridnoteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000012 /* GridnoteUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GridnoteUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000000000000000000020 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		A20000000000000000000021 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
+		A20000000000000000000022 /* SwiftData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftData.framework; path = System/Library/Frameworks/SwiftData.framework; sourceTree = SDKROOT; };
+		A20000000000000000000030 /* BookFormat.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookFormat.swift; sourceTree = "<group>"; };
+		A20000000000000000000031 /* BookMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookMetadata.swift; sourceTree = "<group>"; };
+		A20000000000000000000032 /* AliasProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AliasProfile.swift; sourceTree = "<group>"; };
+		A20000000000000000000033 /* ReadingLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingLocator.swift; sourceTree = "<group>"; };
+		A20000000000000000000034 /* GridnoteError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridnoteError.swift; sourceTree = "<group>"; };
+		A20000000000000000000035 /* BookRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookRecord.swift; sourceTree = "<group>"; };
+		A20000000000000000000036 /* AliasProfileRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AliasProfileRecord.swift; sourceTree = "<group>"; };
+		A20000000000000000000037 /* ReadingProgressRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingProgressRecord.swift; sourceTree = "<group>"; };
+		A20000000000000000000038 /* AppSettingsRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsRecord.swift; sourceTree = "<group>"; };
+		A20000000000000000000039 /* OfficeSheetRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeSheetRecord.swift; sourceTree = "<group>"; };
+		A20000000000000000000040 /* WorkspaceSessionRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkspaceSessionRecord.swift; sourceTree = "<group>"; };
+		A20000000000000000000041 /* GridnoteModelContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridnoteModelContainer.swift; sourceTree = "<group>"; };
+		A20000000000000000000042 /* BookRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookRepository.swift; sourceTree = "<group>"; };
+		A20000000000000000000043 /* AliasProfileRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AliasProfileRepository.swift; sourceTree = "<group>"; };
+		A20000000000000000000044 /* ReadingProgressRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingProgressRepository.swift; sourceTree = "<group>"; };
+		A20000000000000000000045 /* ReadingLocatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingLocatorTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000046 /* PersistenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000047 /* SourceStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceStatus.swift; sourceTree = "<group>"; };
+		A20000000000000000000048 /* BookmarkStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkStore.swift; sourceTree = "<group>"; };
+		A20000000000000000000049 /* ImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportService.swift; sourceTree = "<group>"; };
+		A20000000000000000000050 /* ImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportServiceTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000051 /* BookDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDocument.swift; sourceTree = "<group>"; };
+		A20000000000000000000052 /* BookDocumentParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDocumentParser.swift; sourceTree = "<group>"; };
+		A20000000000000000000053 /* TXTParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TXTParser.swift; sourceTree = "<group>"; };
+		A20000000000000000000054 /* TextParseCacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextParseCacheStore.swift; sourceTree = "<group>"; };
+		A20000000000000000000055 /* TXTParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TXTParserTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000056 /* AppSettingsRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettingsRepository.swift; sourceTree = "<group>"; };
+		A20000000000000000000057 /* ReaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderViewModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000058 /* ReaderViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderViewModelTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000059 /* EPUBArchive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EPUBArchive.swift; sourceTree = "<group>"; };
+		A20000000000000000000060 /* EPUBParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EPUBParser.swift; sourceTree = "<group>"; };
+		A20000000000000000000061 /* EPUBParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EPUBParserTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000065 /* LibraryRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryRepositoryTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000066 /* LibraryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryRepository.swift; sourceTree = "<group>"; };
+		A20000000000000000000067 /* OfficeGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeGrid.swift; sourceTree = "<group>"; };
+		A20000000000000000000068 /* OfficeSheetRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeSheetRepository.swift; sourceTree = "<group>"; };
+		A20000000000000000000069 /* OfficeGridTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficeGridTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000070 /* ExcerptInjectorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExcerptInjectorTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000071 /* ExcerptInjector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExcerptInjector.swift; sourceTree = "<group>"; };
+		A20000000000000000000072 /* WindowTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowTitleView.swift; sourceTree = "<group>"; };
+		A20000000000000000000073 /* SettingsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModelTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000074 /* ReleaseFixtureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseFixtureTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000075 /* PerformanceStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceStateTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000076 /* Fixtures */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Fixtures; sourceTree = "<group>"; };
+		A20000000000000000000077 /* StealthReaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StealthReaderViewModel.swift; sourceTree = "<group>"; };
+		A20000000000000000000078 /* StealthOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StealthOverlayView.swift; sourceTree = "<group>"; };
+		A20000000000000000000079 /* StealthOverlayController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StealthOverlayController.swift; sourceTree = "<group>"; };
+		A20000000000000000000080 /* StealthMenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StealthMenuBarView.swift; sourceTree = "<group>"; };
+		A20000000000000000000081 /* StealthReaderViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StealthReaderViewModelTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000082 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		A20000000000000000000083 /* ReadingBookmarkRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingBookmarkRecord.swift; sourceTree = "<group>"; };
+		A20000000000000000000084 /* ReadingBookmarkRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingBookmarkRepository.swift; sourceTree = "<group>"; };
+		A20000000000000000000085 /* ReaderPresentationSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReaderPresentationSettings.swift; sourceTree = "<group>"; };
+		A20000000000000000000086 /* ReadingBookmarkRepositoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingBookmarkRepositoryTests.swift; sourceTree = "<group>"; };
+		A20000000000000000000087 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A30000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000008 /* SwiftUI.framework in Frameworks */,
+				A10000000000000000000030 /* SwiftData.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000000000000000000002 /* GridnoteTests Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000010 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A30000000000000000000003 /* GridnoteUITests Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000012 /* XCTest.framework in UI Test Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A40000000000000000000001 = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000076 /* Fixtures */,
+				A40000000000000000000002 /* Gridnote */,
+				A40000000000000000000018 /* GridnoteTests */,
+				A40000000000000000000019 /* GridnoteUITests */,
+				A40000000000000000000017 /* Products */,
+				A40000000000000000000016 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		A40000000000000000000002 /* Gridnote */ = {
+			isa = PBXGroup;
+			children = (
+				A20000000000000000000087 /* Assets.xcassets */,
+				A20000000000000000000082 /* Localizable.xcstrings */,
+				A40000000000000000000003 /* App */,
+				A40000000000000000000004 /* Domain */,
+				A40000000000000000000005 /* Persistence */,
+				A40000000000000000000006 /* Parsers */,
+				A40000000000000000000007 /* Library */,
+				A40000000000000000000008 /* Reader */,
+				A40000000000000000000009 /* Office */,
+				A40000000000000000000010 /* Settings */,
+				A40000000000000000000032 /* StealthReader */,
+				A40000000000000000000011 /* Shared */,
+			);
+			path = Gridnote;
+			sourceTree = "<group>";
+		};
+		A40000000000000000000003 /* App */ = {isa = PBXGroup; children = (A20000000000000000000001, A20000000000000000000002, A20000000000000000000003, A20000000000000000000072); path = App; sourceTree = "<group>"; };
+		A40000000000000000000004 /* Domain */ = {isa = PBXGroup; children = (A20000000000000000000030, A20000000000000000000031, A20000000000000000000051, A20000000000000000000032, A20000000000000000000033, A20000000000000000000034, A20000000000000000000047); path = Domain; sourceTree = "<group>"; };
+		A40000000000000000000005 /* Persistence */ = {isa = PBXGroup; children = (A20000000000000000000048, A40000000000000000000023 /* Cache */, A40000000000000000000012 /* Model */, A40000000000000000000013 /* Repository */); path = Persistence; sourceTree = "<group>"; };
+		A40000000000000000000006 /* Parsers */ = {isa = PBXGroup; children = (A20000000000000000000052, A40000000000000000000024 /* TXT */, A40000000000000000000027 /* EPUB */); path = Parsers; sourceTree = "<group>"; };
+		A40000000000000000000007 /* Library */ = {isa = PBXGroup; children = (A20000000000000000000006, A20000000000000000000049, A20000000000000000000066); path = Library; sourceTree = "<group>"; };
+		A40000000000000000000008 /* Reader */ = {isa = PBXGroup; children = (A20000000000000000000085); path = Reader; sourceTree = "<group>"; };
+		A40000000000000000000009 /* Office */ = {isa = PBXGroup; children = (A20000000000000000000004, A20000000000000000000067, A20000000000000000000068, A20000000000000000000071); path = Office; sourceTree = "<group>"; };
+		A40000000000000000000010 /* Settings */ = {isa = PBXGroup; children = (A20000000000000000000007); path = Settings; sourceTree = "<group>"; };
+		A40000000000000000000011 /* Shared */ = {isa = PBXGroup; path = Shared; sourceTree = "<group>"; };
+		A40000000000000000000012 /* Model */ = {isa = PBXGroup; children = (A20000000000000000000035, A20000000000000000000036, A20000000000000000000037, A20000000000000000000038, A20000000000000000000039, A20000000000000000000040, A20000000000000000000041, A20000000000000000000083); path = Model; sourceTree = "<group>"; };
+		A40000000000000000000013 /* Repository */ = {isa = PBXGroup; children = (A20000000000000000000042, A20000000000000000000043, A20000000000000000000044, A20000000000000000000056, A20000000000000000000084); path = Repository; sourceTree = "<group>"; };
+		A40000000000000000000016 /* Frameworks */ = {isa = PBXGroup; children = (A20000000000000000000020, A20000000000000000000021, A20000000000000000000022); name = Frameworks; sourceTree = "<group>"; };
+		A40000000000000000000017 /* Products */ = {isa = PBXGroup; children = (A20000000000000000000008, A20000000000000000000011, A20000000000000000000012); name = Products; sourceTree = "<group>"; };
+		A40000000000000000000018 /* GridnoteTests */ = {isa = PBXGroup; children = (A20000000000000000000009, A40000000000000000000020 /* Domain */, A40000000000000000000021 /* Persistence */, A40000000000000000000022 /* Library */, A40000000000000000000025 /* Parsers */, A40000000000000000000026 /* Reader */, A40000000000000000000029 /* Office */, A40000000000000000000030 /* Settings */, A40000000000000000000033 /* StealthReader Tests */, A40000000000000000000031 /* Release */); path = GridnoteTests; sourceTree = "<group>"; };
+		A40000000000000000000019 /* GridnoteUITests */ = {isa = PBXGroup; children = (A40000000000000000000014); path = GridnoteUITests; sourceTree = "<group>"; };
+		A40000000000000000000014 /* Launch */ = {isa = PBXGroup; children = (A20000000000000000000010); path = Launch; sourceTree = "<group>"; };
+		A40000000000000000000020 /* Domain */ = {isa = PBXGroup; children = (A20000000000000000000045); path = Domain; sourceTree = "<group>"; };
+		A40000000000000000000021 /* Persistence */ = {isa = PBXGroup; children = (A20000000000000000000046, A20000000000000000000086); path = Persistence; sourceTree = "<group>"; };
+		A40000000000000000000022 /* Library */ = {isa = PBXGroup; children = (A20000000000000000000050, A20000000000000000000065); path = Library; sourceTree = "<group>"; };
+		A40000000000000000000023 /* Cache */ = {isa = PBXGroup; children = (A20000000000000000000054); path = Cache; sourceTree = "<group>"; };
+		A40000000000000000000024 /* TXT */ = {isa = PBXGroup; children = (A20000000000000000000053); path = TXT; sourceTree = "<group>"; };
+		A40000000000000000000025 /* Parsers */ = {isa = PBXGroup; children = (A20000000000000000000055, A20000000000000000000061); path = Parsers; sourceTree = "<group>"; };
+		A40000000000000000000026 /* Reader */ = {isa = PBXGroup; children = (); path = Reader; sourceTree = "<group>"; };
+		A40000000000000000000027 /* EPUB */ = {isa = PBXGroup; children = (A20000000000000000000059, A20000000000000000000060); path = EPUB; sourceTree = "<group>"; };
+		A40000000000000000000029 /* Office */ = {isa = PBXGroup; children = (A20000000000000000000069, A20000000000000000000070); path = Office; sourceTree = "<group>"; };
+		A40000000000000000000030 /* Settings */ = {isa = PBXGroup; children = (A20000000000000000000073); path = Settings; sourceTree = "<group>"; };
+		A40000000000000000000031 /* Release */ = {isa = PBXGroup; children = (A20000000000000000000074, A20000000000000000000075); path = Release; sourceTree = "<group>"; };
+		A40000000000000000000032 /* StealthReader */ = {isa = PBXGroup; children = (A20000000000000000000077, A20000000000000000000078, A20000000000000000000079, A20000000000000000000080); path = StealthReader; sourceTree = "<group>"; };
+		A40000000000000000000033 /* StealthReader Tests */ = {isa = PBXGroup; children = (A20000000000000000000081); path = StealthReader; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A50000000000000000000001 /* Gridnote */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A60000000000000000000002 /* Build configuration list for PBXNativeTarget "Gridnote" */;
+			buildPhases = (A30000000000000000000004, A30000000000000000000001, A30000000000000000000005);
+			buildRules = ();
+			dependencies = ();
+			name = Gridnote;
+			productName = Gridnote;
+			productReference = A20000000000000000000008 /* Gridnote.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A50000000000000000000002 /* GridnoteTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A60000000000000000000003 /* Build configuration list for PBXNativeTarget "GridnoteTests" */;
+			buildPhases = (A30000000000000000000006, A30000000000000000000002, A30000000000000000000007);
+			buildRules = ();
+			dependencies = (A70000000000000000000001);
+			name = GridnoteTests;
+			productName = GridnoteTests;
+			productReference = A20000000000000000000011 /* GridnoteTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		A50000000000000000000003 /* GridnoteUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A60000000000000000000004 /* Build configuration list for PBXNativeTarget "GridnoteUITests" */;
+			buildPhases = (A30000000000000000000008, A30000000000000000000003, A30000000000000000000009);
+			buildRules = ();
+			dependencies = (A70000000000000000000002);
+			name = GridnoteUITests;
+			productName = GridnoteUITests;
+			productReference = A20000000000000000000012 /* GridnoteUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A80000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = { LastSwiftUpdateCheck = 2600; LastUpgradeCheck = 2600; TargetAttributes = { A50000000000000000000001 = { CreatedOnToolsVersion = 26.0; }; A50000000000000000000002 = { CreatedOnToolsVersion = 26.0; TestTargetID = A50000000000000000000001; }; A50000000000000000000003 = { CreatedOnToolsVersion = 26.0; TestTargetID = A50000000000000000000001; }; }; };
+			buildConfigurationList = A60000000000000000000001 /* Build configuration list for PBXProject "Gridnote" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (en, "zh-Hans", Base);
+			mainGroup = A40000000000000000000001;
+			productRefGroup = A40000000000000000000017 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (A50000000000000000000001, A50000000000000000000002, A50000000000000000000003);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A30000000000000000000005 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000066, A10000000000000000000071); runOnlyForDeploymentPostprocessing = 0; };
+		A30000000000000000000007 /* GridnoteTests Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000060); runOnlyForDeploymentPostprocessing = 0; };
+		A30000000000000000000009 /* GridnoteUITests Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A30000000000000000000004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000001, A10000000000000000000002, A10000000000000000000003, A10000000000000000000004, A10000000000000000000006, A10000000000000000000007, A10000000000000000000013, A10000000000000000000014, A10000000000000000000015, A10000000000000000000016, A10000000000000000000017, A10000000000000000000018, A10000000000000000000019, A10000000000000000000020, A10000000000000000000021, A10000000000000000000022, A10000000000000000000023, A10000000000000000000024, A10000000000000000000025, A10000000000000000000026, A10000000000000000000027, A10000000000000000000031, A10000000000000000000032, A10000000000000000000033, A10000000000000000000035, A10000000000000000000036, A10000000000000000000037, A10000000000000000000038, A10000000000000000000040, A10000000000000000000043, A10000000000000000000044, A10000000000000000000050, A10000000000000000000051, A10000000000000000000052, A10000000000000000000055, A10000000000000000000056, A10000000000000000000061, A10000000000000000000062, A10000000000000000000063, A10000000000000000000064, A10000000000000000000067, A10000000000000000000068, A10000000000000000000069); runOnlyForDeploymentPostprocessing = 0; };
+		A30000000000000000000006 /* GridnoteTests Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000009, A10000000000000000000028, A10000000000000000000029, A10000000000000000000034, A10000000000000000000039, A10000000000000000000045, A10000000000000000000049, A10000000000000000000053, A10000000000000000000054, A10000000000000000000057, A10000000000000000000058, A10000000000000000000059, A10000000000000000000065, A10000000000000000000070); runOnlyForDeploymentPostprocessing = 0; };
+		A30000000000000000000008 /* GridnoteUITests Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A10000000000000000000011); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A70000000000000000000001 = {isa = PBXTargetDependency; target = A50000000000000000000001 /* Gridnote */; targetProxy = A90000000000000000000001 /* PBXContainerItemProxy */; };
+		A70000000000000000000002 = {isa = PBXTargetDependency; target = A50000000000000000000001 /* Gridnote */; targetProxy = A90000000000000000000002 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		A90000000000000000000001 = {isa = PBXContainerItemProxy; containerPortal = A80000000000000000000001 /* Project object */; proxyType = 1; remoteGlobalIDString = A50000000000000000000001; remoteInfo = Gridnote; };
+		A90000000000000000000002 = {isa = PBXContainerItemProxy; containerPortal = A80000000000000000000001 /* Project object */; proxyType = 1; remoteGlobalIDString = A50000000000000000000001; remoteInfo = Gridnote; };
+/* End PBXContainerItemProxy section */
+
+/* Begin XCBuildConfiguration section */
+		B10000000000000000000001 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; MACOSX_DEPLOYMENT_TARGET = 26.0; SDKROOT = macosx; SWIFT_VERSION = 6.0; }; name = Debug; };
+		B10000000000000000000002 /* Release */ = {isa = XCBuildConfiguration; buildSettings = { ALWAYS_SEARCH_USER_PATHS = NO; MACOSX_DEPLOYMENT_TARGET = 26.0; SDKROOT = macosx; SWIFT_VERSION = 6.0; }; name = Release; };
+		B10000000000000000000003 /* Gridnote Debug */ = {isa = XCBuildConfiguration; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CLANG_ENABLE_MODULES = YES; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; ENABLE_TESTABILITY = YES; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Gridnote; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.books"; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; MACOSX_DEPLOYMENT_TARGET = 26.0; PRODUCT_BUNDLE_IDENTIFIER = com.gridnote.app; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = macosx; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 6.0; }; name = Debug; };
+		B10000000000000000000004 /* Gridnote Release */ = {isa = XCBuildConfiguration; buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon; CLANG_ENABLE_MODULES = YES; CODE_SIGN_STYLE = Automatic; CURRENT_PROJECT_VERSION = 1; GENERATE_INFOPLIST_FILE = YES; INFOPLIST_KEY_CFBundleDisplayName = Gridnote; INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.books"; LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks"; MACOSX_DEPLOYMENT_TARGET = 26.0; PRODUCT_BUNDLE_IDENTIFIER = com.gridnote.app; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = macosx; SWIFT_EMIT_LOC_STRINGS = YES; SWIFT_VERSION = 6.0; }; name = Release; };
+		B10000000000000000000005 /* GridnoteTests Debug */ = {isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 26.0; PRODUCT_BUNDLE_IDENTIFIER = com.gridnote.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = macosx; SWIFT_VERSION = 6.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Gridnote.app/Contents/MacOS/Gridnote"; }; name = Debug; };
+		B10000000000000000000006 /* GridnoteTests Release */ = {isa = XCBuildConfiguration; buildSettings = { BUNDLE_LOADER = "$(TEST_HOST)"; CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 26.0; PRODUCT_BUNDLE_IDENTIFIER = com.gridnote.tests; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = macosx; SWIFT_VERSION = 6.0; TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Gridnote.app/Contents/MacOS/Gridnote"; }; name = Release; };
+		B10000000000000000000007 /* GridnoteUITests Debug */ = {isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 26.0; PRODUCT_BUNDLE_IDENTIFIER = com.gridnote.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = macosx; SWIFT_VERSION = 6.0; TEST_TARGET_NAME = Gridnote; }; name = Debug; };
+		B10000000000000000000008 /* GridnoteUITests Release */ = {isa = XCBuildConfiguration; buildSettings = { CODE_SIGN_STYLE = Automatic; GENERATE_INFOPLIST_FILE = YES; MACOSX_DEPLOYMENT_TARGET = 26.0; PRODUCT_BUNDLE_IDENTIFIER = com.gridnote.uitests; PRODUCT_NAME = "$(TARGET_NAME)"; SDKROOT = macosx; SWIFT_VERSION = 6.0; TEST_TARGET_NAME = Gridnote; }; name = Release; };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A60000000000000000000001 /* Build configuration list for PBXProject "Gridnote" */ = {isa = XCConfigurationList; buildConfigurations = (B10000000000000000000001, B10000000000000000000002); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A60000000000000000000002 /* Build configuration list for PBXNativeTarget "Gridnote" */ = {isa = XCConfigurationList; buildConfigurations = (B10000000000000000000003, B10000000000000000000004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A60000000000000000000003 /* Build configuration list for PBXNativeTarget "GridnoteTests" */ = {isa = XCConfigurationList; buildConfigurations = (B10000000000000000000005, B10000000000000000000006); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		A60000000000000000000004 /* Build configuration list for PBXNativeTarget "GridnoteUITests" */ = {isa = XCConfigurationList; buildConfigurations = (B10000000000000000000007, B10000000000000000000008); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = A80000000000000000000001 /* Project object */;
+}
