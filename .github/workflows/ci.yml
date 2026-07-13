@@ -29,4 +29,6 @@ jobs:
           xcodebuild -project Gridnote.xcodeproj -scheme Gridnote
           -destination 'platform=macOS'
           -parallel-testing-enabled NO
-          -skip-testing:GridnoteUITests test
+          -skip-testing:GridnoteUITests
+          -skip-testing:GridnoteTests/ReleaseFixtureTests/testLargeTXTParserPerformanceSmoke
+          test

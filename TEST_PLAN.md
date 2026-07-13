@@ -62,6 +62,8 @@ Network should be disabled or ignored for at least one acceptance pass to verify
 
 UI automation is not part of the default CI job because macOS test launches can request local permissions and block unattended runners. Run UI tests manually on a dedicated development Mac after granting the required test-runner permissions.
 
+The 20MB TXT wall-clock performance smoke test runs on the controlled local release machine. Shared GitHub runners skip that one timing assertion because host load is not stable enough for a meaningful regression gate; functional TXT parsing remains covered in CI.
+
 ## 4. Required Test Fixtures
 
 Store fixtures in-repo. Do not fetch them at runtime.

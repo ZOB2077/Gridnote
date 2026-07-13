@@ -9,6 +9,7 @@ Date: 2026-07-13
 - Unit coverage includes parsing, persistence, progress, aliases, settings, office grid projection, and error paths.
 - UI coverage includes office launch, import affordance, library search/detail/read, missing-source re-link visibility, TXT restore, workspace switching, safe titles, and settings alias flow.
 - Unit tests pass locally, including parser, persistence, office projection, floating-reader, and progress-synchronization coverage.
+- GitHub CI runs functional unit coverage and explicitly skips only the host-dependent 20MB wall-clock assertion; that measurement is retained below as local release evidence.
 - UI automation explicitly terminates each launched application during teardown, including relaunch scenarios, to prevent stale settings or reader windows from blocking the Xcode test session.
 - Core implementation contains no networking client, analytics SDK, account flow, or cloud dependency.
 
