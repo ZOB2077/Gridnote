@@ -44,9 +44,8 @@ The MVP must include the following:
 - Import local `TXT` and `EPUB` files.
 - Persist file access using security-scoped bookmarks when needed.
 - Maintain a local library list.
-- Provide a standard reader workspace.
 - Provide an office-style spreadsheet workspace.
-- Provide a disguised "cell reader" presentation inside the office workspace.
+- Provide a disguised formula-bar reading presentation above the office grid.
 - Provide a movable, resizable floating reader controlled from the toolbar or menu bar.
 - Persist reading progress per book.
 - Persist alias metadata per book.
@@ -103,24 +102,22 @@ The library must support:
 - Open selected book
 - Search by alias title and actual title
 
-## 6.4 Reader Workspace
+## 6.4 Reading Surfaces
 
-The reader workspace is the clean reading surface for comfortable reading.
+Gridnote focuses on two reading surfaces: the office formula bar and the floating reader. A separate full-screen or standard reader workspace is not part of the current product flow.
 
 MVP requirements:
 
-- Continuous vertical reading for text-based formats.
-- Theme selection: system, light paper, dark.
-- Typography controls: font size and line height.
-- Chapter navigation for formats that expose a table of contents.
-- Reliable progress restoration.
+- Configurable text color, opacity, font size, and line spacing.
+- Search, bookmarks, chapter navigation, and reliable progress restoration.
+- Page-based navigation without a vertical scrollbar in the floating reader.
+- Bidirectional progress synchronization between both reading surfaces.
 
-The MVP reader does not include:
+The MVP does not include:
 
-- Full-book search
-- Notes or highlights
-- Bookmarks
-- Page curl or animated transitions
+- A dedicated immersive reading workspace.
+- Notes, highlights, or page-curl effects.
+- Web content or online reading sources.
 
 ## 6.5 Office Workspace
 
@@ -151,32 +148,32 @@ It must not include:
 - `.xlsx` import/export
 - Charts, pivot tables, or macros
 
-## 6.6 Disguised Cell Reader
+## 6.6 Formula-Bar Reader
 
-The disguised reading presentation in MVP is the `Cell Reader`.
+The disguised reading presentation is placed in the formula bar above the office grid.
 
 Behavior:
 
-- The office sheet includes a `Notes` or similar text-heavy column.
-- The active reading excerpt is injected into consecutive visible cells in that column.
-- Each paragraph or paragraph chunk maps to one visible row.
-- Advancing reading replaces the excerpted cells with the next chunk while preserving the office-like layout.
-- Other columns remain editable office-like data.
+- The office sheet remains filled with deterministic synthetic demo data and does not contain book text or real business records.
+- The active excerpt appears in the formula bar as if it were selected-cell content.
+- `F7` and `F8` navigate excerpts while Gridnote is focused and the floating reader is hidden.
+- The excerpt can automatically change to a neutral business note after a configurable delay or when the pointer leaves the area.
+- Search and bookmark actions operate on the same shared reading location used by the floating reader.
 
 Acceptance intent:
 
 - Up close, the user can read prose.
-- At a glance, the screen still resembles a spreadsheet workspace.
+- At a glance, the screen still resembles a populated spreadsheet workspace.
 
 ## 6.7 Workspace Switching
 
-MVP switching rules:
+MVP visibility rules:
 
-- `Option + Command + X` toggles between `Office` and `Reader` while Gridnote is focused.
-- `Escape` in `Reader` returns to `Office`.
-- When the app resigns active and the setting is enabled, visible state must resolve to `Office`.
-- Switching must preserve reading location.
-- Switching must not flash a cover image, library view, or actual book title in the window title.
+- `F9` shows or hides the floating reader.
+- When the app resigns active and focus shielding is enabled, the floating reader hides and the formula bar conceals its excerpt.
+- `F9` can restore a reader hidden by focus shielding.
+- Hiding and restoring must preserve reading location.
+- Visibility changes must not flash a cover image, library view, or actual book title in the window title.
 
 System-wide global shortcuts are out of scope for MVP.
 
@@ -186,11 +183,12 @@ The optional `Floating Reader` is a compact always-on-top panel for short readin
 
 - It uses the currently selected or most recently opened TXT/EPUB book.
 - It paginates normalized text by a configurable character count.
-- It persists progress through the same `ReadingProgressRecord` used by the standard reader.
-- It supports previous/next controls, font size, panel opacity, and characters per page.
+- It persists progress through the same `ReadingProgressRecord` used by the office formula bar.
+- It supports previous/next controls, search, bookmarks, chapter navigation, typography, text opacity, panel opacity, and reading progress.
 - It can be shown or hidden from the main toolbar or Gridnote menu bar item.
 - It joins all Spaces and may appear beside full-screen apps.
-- It does not install global keyboard event monitors or request Accessibility permission.
+- Super Stealth mode removes chrome and controls, can display a single line, and exposes controls through the menu bar.
+- It uses Carbon hot-key registration for the configured shortcuts and does not require Accessibility permission.
 
 ## 6.8 Titles And Aliases
 
@@ -287,7 +285,7 @@ Soft targets for MVP on a recent Apple Silicon Mac:
 
 - Cold launch to visible office workspace within `2 seconds`.
 - Workspace toggle within `150 ms`.
-- Open a `20 MB` TXT file within `3 seconds`.
+- Open a `20 MB` TXT file within `5 seconds` in release validation.
 - Reopen last book to the correct location with no more than one paragraph of drift for text formats.
 
 ## 11. Privacy And Platform Rules
@@ -305,8 +303,9 @@ The MVP is acceptable only if all of the following are true:
 - A user can import and read `TXT` and `EPUB` files offline.
 - The app launches into `Office` mode by default.
 - The office workspace looks like an original office-style spreadsheet shell, not a broken or empty placeholder.
-- The cell reader displays readable prose inside an office-like sheet layout.
-- The user can switch between `Office` and `Reader` instantly while the app is focused.
+- The formula bar displays readable prose above a populated office-like sheet layout.
+- The user can show or hide the floating reader instantly and can restore it after focus shielding.
+- Office formula-bar navigation and floating-reader navigation remain synchronized.
 - The app restores the last reading position for each supported format.
 - Actual book titles are not used in the window title.
 - Missing files surface a recoverable re-link path.

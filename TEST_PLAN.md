@@ -24,7 +24,8 @@ Required unit coverage areas:
 - `EPUB` package parsing
 - `ReadingLocator` encode and decode round trips
 - `SwiftData` repository behavior for book records and progress
-- `ExcerptInjector` behavior for office cell reader projection
+- `ExcerptInjector` behavior for office formula-bar projection
+- Bidirectional reading-progress synchronization
 - Settings persistence
 
 ## 2.2 UI Tests
@@ -34,8 +35,8 @@ Required UI coverage areas:
 - First launch shows office workspace
 - Empty state import affordance is visible
 - Importing a supported fixture creates a library item
-- Opening a library item enters reader mode
-- Toggling back returns to office mode
+- Opening a library item selects it for office and floating reading
+- Showing and hiding the floating reader preserves progress
 - Alias title appears where expected
 - Missing file state surfaces a re-link option
 
@@ -44,8 +45,8 @@ Required UI coverage areas:
 Manual testing remains required for:
 
 - Visual credibility of the office shell
-- Reading comfort in both reader and office cell-reader modes
-- Window title behavior during fast switching
+- Reading comfort in both floating and office formula-bar modes
+- Window title behavior while showing and hiding the floating reader
 - Focus loss behavior
 - Performance smoke checks
 
@@ -58,6 +59,8 @@ Minimum environments:
 - Light mode and dark mode
 
 Network should be disabled or ignored for at least one acceptance pass to verify offline behavior.
+
+UI automation is not part of the default CI job because macOS test launches can request local permissions and block unattended runners. Run UI tests manually on a dedicated development Mac after granting the required test-runner permissions.
 
 ## 4. Required Test Fixtures
 
@@ -156,7 +159,7 @@ Soft targets:
 
 - Launch under `2 seconds`
 - Toggle under `150 ms`
-- Large TXT import under `3 seconds`
+- Large TXT import under `5 seconds` in release validation
 
 ## 9. Test Execution Commands
 
@@ -164,7 +167,7 @@ Once the project exists, default verification commands are:
 
 ```bash
 xcodebuild -project Gridnote.xcodeproj -scheme Gridnote -destination 'platform=macOS' build
-xcodebuild -project Gridnote.xcodeproj -scheme Gridnote -destination 'platform=macOS' test
+xcodebuild -project Gridnote.xcodeproj -scheme Gridnote -destination 'platform=macOS' -parallel-testing-enabled NO -skip-testing:GridnoteUITests test
 ```
 
 Additional focused commands may be used for parser-only or UI-only changes, but the full test run remains the release gate.

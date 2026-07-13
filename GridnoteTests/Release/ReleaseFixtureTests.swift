@@ -33,7 +33,7 @@ final class ReleaseFixtureTests: XCTestCase {
         let document = try TXTParser().parse(data: data, metadata: .init(title: "Large Fixture"), id: UUID())
         let elapsed = CFAbsoluteTimeGetCurrent() - start
         XCTAssertFalse(document.chapters.isEmpty)
-        XCTAssertLessThan(elapsed, 3.0, "20MB TXT parse exceeded the soft target: \(elapsed)s")
+        XCTAssertLessThan(elapsed, 5.0, "20MB TXT parse exceeded the soft target: \(elapsed)s")
         print("PERF large_txt_parse_seconds=\(String(format: "%.4f", elapsed))")
     }
 

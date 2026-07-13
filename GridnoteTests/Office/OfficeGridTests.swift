@@ -13,7 +13,7 @@ final class OfficeGridTests: XCTestCase {
         XCTAssertEqual(try JSONDecoder().decode(OfficeGridSnapshot.self, from: data), snapshot)
     }
 
-    func testDefaultOperationsFillsEveryVisibleCellWithRentalData() {
+    func testDefaultOperationsFillsEveryVisibleCellWithSyntheticData() {
         let snapshot = OfficeGridSnapshot.defaultOperations
 
         for row in 0..<OfficeGridSnapshot.rowCount {
@@ -21,12 +21,12 @@ final class OfficeGridTests: XCTestCase {
                 XCTAssertFalse(snapshot[OfficeCellCoordinate(row: row, column: column)].isEmpty)
             }
         }
-        XCTAssertEqual(snapshot[OfficeCellCoordinate(row: 0, column: 4)], "商品简称（机型）")
-        XCTAssertEqual(snapshot[OfficeCellCoordinate(row: 1, column: 4)], "一加 Ace 6")
-        XCTAssertEqual(snapshot[OfficeCellCoordinate(row: 1, column: 7)], "100.00%")
+        XCTAssertEqual(snapshot[OfficeCellCoordinate(row: 0, column: 4)], "设备型号")
+        XCTAssertEqual(snapshot[OfficeCellCoordinate(row: 1, column: 4)], "测试设备 G-01")
+        XCTAssertTrue(snapshot[OfficeCellCoordinate(row: 1, column: 3)].hasPrefix("模拟渠道"))
     }
 
-    func testEveryDisguiseTemplateFillsTheVisiblePhoneRentalGrid() {
+    func testEveryDisguiseTemplateFillsTheVisibleSyntheticGrid() {
         for template in OfficeTemplateFamily.allCases {
             let snapshot = OfficeGridSnapshot.snapshot(for: template)
             for row in 0..<OfficeGridSnapshot.rowCount {
@@ -35,8 +35,8 @@ final class OfficeGridTests: XCTestCase {
                 }
             }
         }
-        XCTAssertEqual(OfficeGridSnapshot.channelConversion[OfficeCellCoordinate(row: 0, column: 5)], "曝光量")
-        XCTAssertEqual(OfficeGridSnapshot.inventoryFulfillment[OfficeCellCoordinate(row: 0, column: 6)], "可租库存")
+        XCTAssertEqual(OfficeGridSnapshot.channelConversion[OfficeCellCoordinate(row: 0, column: 5)], "展示量")
+        XCTAssertEqual(OfficeGridSnapshot.inventoryFulfillment[OfficeCellCoordinate(row: 0, column: 6)], "可用库存")
     }
 
     func testOldRentalGridIsRecognizedForReferenceStyleMigration() {
@@ -74,7 +74,7 @@ final class OfficeGridTests: XCTestCase {
         XCTAssertEqual(reloaded.templateFamilyRawValue, OfficeTemplateFamily.budget.rawValue)
         XCTAssertEqual(reloaded.activeSheetName, OfficeTemplateFamily.budget.defaultSheetName)
         XCTAssertEqual(repository.snapshot(from: reloaded), applied)
-        XCTAssertEqual(applied[OfficeCellCoordinate(row: 0, column: 6)], "可租库存")
+        XCTAssertEqual(applied[OfficeCellCoordinate(row: 0, column: 6)], "可用库存")
     }
 
     func testExcerptSearchWrapsInBothDirections() {

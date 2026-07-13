@@ -106,7 +106,7 @@ private struct SettingsContent: View {
                         Text(template.disguiseTitle).tag(template)
                     }
                 }
-                Text("切换后会将当前伪装表格替换为对应的手机租赁行业数据；阅读进度和书签不受影响。")
+                Text("切换后会将当前表格替换为纯虚构的演示数据；阅读进度和书签不受影响。")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Toggle("自动遮蔽公式栏正文", isOn: $viewModel.autoMaskFormulaBar)

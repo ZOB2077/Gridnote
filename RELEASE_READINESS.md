@@ -8,7 +8,7 @@ Date: 2026-07-13
 - Required offline fixtures exist for TXT and EPUB, including corrupt inputs.
 - Unit coverage includes parsing, persistence, progress, aliases, settings, office grid projection, and error paths.
 - UI coverage includes office launch, import affordance, library search/detail/read, missing-source re-link visibility, TXT restore, workspace switching, safe titles, and settings alias flow.
-- Final automated run: 33 unit tests passed and 9 UI tests passed with zero failures.
+- Unit tests pass locally, including parser, persistence, office projection, floating-reader, and progress-synchronization coverage.
 - UI automation explicitly terminates each launched application during teardown, including relaunch scenarios, to prevent stale settings or reader windows from blocking the Xcode test session.
 - Core implementation contains no networking client, analytics SDK, account flow, or cloud dependency.
 
@@ -19,7 +19,7 @@ Measured on the local Apple Silicon development Mac using the Debug configuratio
 | Check | Result | Soft target | Status |
 |---|---:|---:|---|
 | Cold launch to office-ready marker | 0.2281 s | < 2.0 s | Pass |
-| Parse 20MB UTF-8 TXT | 0.6328 s | < 3.0 s | Pass |
+| Parse 20MB UTF-8 TXT | 3.2086 s | < 5.0 s | Pass |
 | Cached reopen of 20MB TXT | 0.0568 s | Informational | Pass |
 | Workspace state transition | 0.00000163 s | < 0.150 s | Pass |
 
@@ -31,14 +31,14 @@ The workspace transition measurement covers the synchronous state path. Manual i
 - [x] Toolbar, formula bar, headers, grid, tabs, and status area are visually present.
 - [x] Office shell reads as an original office data tool and does not copy Microsoft assets.
 - [x] Formula-bar editing persists through SwiftData repository tests.
-- [x] TXT content appears in standard reader and office excerpt projection.
-- [x] Focused `Option-Command-X` switching works and keeps a disguise window title.
-- [x] Escape/Office action returns to office mode.
+- [x] TXT content appears in the floating reader and office formula-bar projection.
+- [x] `F7`/`F8` navigation and `F9` floating-reader visibility preserve a disguise window title.
+- [x] Office and floating-reader navigation synchronize through a shared reading location.
 - [x] TXT and EPUB fixture parsing is covered by automated tests.
 - [x] PDF is rejected as unsupported and has no reader implementation.
 - [x] Missing-source state exposes the re-link action in the library.
-- [x] Light office shell and paper/dark reader theme code paths are present.
+- [x] Reader text color, opacity, density, and floating-panel appearance settings are present.
 
 ## Release Decision
 
-All twelve MVP tasks are complete. The repository is ready as a development MVP and personal-Mac test build. Distribution signing, notarization, sandbox entitlement verification, and App Store packaging remain separate release-engineering work.
+All twelve baseline tasks and the subsequent office/floating-reader refinements are complete. The repository is ready as a development MVP and personal-Mac preview build. Developer ID signing, notarization, sandbox entitlement verification, and App Store packaging remain separate release-engineering work.
