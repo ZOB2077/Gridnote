@@ -22,6 +22,7 @@ private struct OfficeWorkspaceContent: View {
     @State private var actionStatus = ""
     @State private var formulaMaskTask: Task<Void, Never>?
     @State private var formulaBarLineCount = OfficeFormulaMaskSettings.lineCount
+    @State private var activeRibbonTab = "开始"
     private let context: ModelContext
 
     init(context: ModelContext) {
@@ -97,38 +98,47 @@ private struct OfficeWorkspaceContent: View {
 
     private var officeToolbar: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 13) {
+            HStack(spacing: 11) {
                 Image(systemName: "line.3.horizontal")
-                Text("文件").fontWeight(.medium)
-                Divider().frame(height: 20)
-                ForEach(["square.and.arrow.down", "printer", "doc.on.doc", "arrow.uturn.left", "arrow.uturn.right"], id: \.self) { symbol in
-                    Image(systemName: symbol).foregroundStyle(.secondary)
-                }
-                Divider().frame(height: 20)
-                Text("设备租赁数据分析.xlsx")
-                    .font(.system(size: 12))
+                    .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(.secondary)
+                Text("文件")
+                    .font(.system(size: 14, weight: .semibold))
+                Divider().frame(height: 18)
+                HStack(spacing: 3) {
+                    ForEach(["square.and.arrow.down", "printer", "doc.on.doc", "arrow.uturn.left", "arrow.uturn.right"], id: \.self) { symbol in
+                        quickCommand(symbol)
+                    }
+                }
+                Divider().frame(height: 18)
+                Text("设备租赁数据分析.xlsx")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.secondary.opacity(0.9))
                 Spacer(minLength: 16)
-                HStack(spacing: 28) {
+                HStack(spacing: 21) {
                     ForEach(["开始", "插入", "页面", "公式", "数据", "审阅", "视图", "工具"], id: \.self) { title in
-                        Text(title)
-                            .font(.system(size: 14, weight: title == "开始" ? .semibold : .medium))
-                            .foregroundStyle(title == "开始" ? Color(red: 0.02, green: 0.52, blue: 0.31) : .primary)
-                            .overlay(alignment: .bottom) {
-                                Rectangle().fill(title == "开始" ? Color(red: 0.02, green: 0.52, blue: 0.31) : .clear).frame(height: 2).offset(y: 11)
-                            }
+                        ribbonTab(title)
                     }
                 }
                 Spacer(minLength: 16)
-                Label("已保存", systemImage: "checkmark.icloud")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.secondary)
+                Label("已保存", systemImage: "checkmark.circle.fill")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Color(red: 0.02, green: 0.48, blue: 0.28))
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 5)
+                    .background(Color(red: 0.02, green: 0.50, blue: 0.30).opacity(0.09), in: Capsule())
             }
-            .padding(.horizontal, 16)
-            .frame(height: 42)
-            .background(Color(red: 0.96, green: 0.96, blue: 0.95))
+            .padding(.horizontal, 18)
+            .frame(height: 44)
+            .background(
+                LinearGradient(
+                    colors: [Color(red: 0.985, green: 0.988, blue: 0.982), Color(red: 0.945, green: 0.958, blue: 0.943)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
 
-            HStack(spacing: 0) {
+            HStack(spacing: 2) {
                 ribbonGroup("剪贴板", items: [("doc.on.clipboard", "粘贴"), ("scissors", "剪切")])
                 ribbonGroup("字体", items: [("textformat", "宋体"), ("bold", "加粗"), ("textformat.size", "字号")])
                 ribbonGroup("对齐", items: [("text.alignleft", "左对齐"), ("text.aligncenter", "居中"), ("rectangle.3.group", "合并")])
@@ -138,28 +148,61 @@ private struct OfficeWorkspaceContent: View {
                 utilityControls
                     .padding(.trailing, 18)
             }
-            .frame(height: 82)
-            .background(.white)
-            .overlay(alignment: .bottom) { Divider() }
+            .padding(.horizontal, 8)
+            .frame(height: 86)
+            .background(Color(red: 0.992, green: 0.995, blue: 0.990))
+            .overlay(alignment: .bottom) { Rectangle().fill(Color.black.opacity(0.10)).frame(height: 0.5) }
         }
         .accessibilityIdentifier("office-workspace")
     }
 
+    private func quickCommand(_ symbol: String) -> some View {
+        Image(systemName: symbol)
+            .font(.system(size: 13, weight: .medium))
+            .foregroundStyle(.secondary)
+            .frame(width: 25, height: 25)
+            .background(Color.black.opacity(0.025), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+    }
+
+    private func ribbonTab(_ title: String) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.16)) { activeRibbonTab = title }
+        } label: {
+            Text(title)
+                .font(.system(size: 14, weight: activeRibbonTab == title ? .semibold : .medium))
+                .foregroundStyle(activeRibbonTab == title ? Color(red: 0.015, green: 0.48, blue: 0.28) : .primary.opacity(0.82))
+                .padding(.vertical, 13)
+                .overlay(alignment: .bottom) {
+                    Capsule()
+                        .fill(activeRibbonTab == title ? Color(red: 0.015, green: 0.50, blue: 0.29) : .clear)
+                        .frame(width: 21, height: 2.5)
+                        .offset(y: -5)
+                }
+        }
+        .buttonStyle(.plain)
+    }
+
     private func ribbonGroup(_ title: String, items: [(String, String)]) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             ForEach(items, id: \.0) { symbol, label in
                 VStack(spacing: 5) {
-                    Image(systemName: symbol).font(.system(size: 16, weight: .medium))
-                    Text(label).font(.system(size: 10))
+                    Image(systemName: symbol)
+                        .font(.system(size: 15, weight: .semibold))
+                        .frame(width: 28, height: 26)
+                        .background(label == "筛选" ? Color(red: 0.02, green: 0.50, blue: 0.30).opacity(0.10) : .clear, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    Text(label).font(.system(size: 10, weight: .medium))
                 }
-                .foregroundStyle(.primary.opacity(0.78))
+                .foregroundStyle(label == "筛选" ? Color(red: 0.02, green: 0.43, blue: 0.25) : .primary.opacity(0.76))
             }
         }
-        .frame(minWidth: 102, minHeight: 56)
-        .padding(.horizontal, 14)
-        .overlay(alignment: .trailing) { Divider().frame(height: 58) }
+        .frame(minWidth: 104, minHeight: 65)
+        .padding(.horizontal, 13)
+        .background(.white.opacity(0.58), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+        .overlay(alignment: .trailing) {
+            Rectangle().fill(Color.black.opacity(0.08)).frame(width: 0.5, height: 58)
+        }
         .overlay(alignment: .bottom) {
-            Text(title).font(.system(size: 9)).foregroundStyle(.tertiary).offset(y: 9)
+            Text(title).font(.system(size: 9, weight: .medium)).foregroundStyle(.tertiary).offset(y: -2)
         }
         .allowsHitTesting(false)
     }
@@ -180,14 +223,21 @@ private struct OfficeWorkspaceContent: View {
                 .accessibilityIdentifier("open-reader")
         }
         .buttonStyle(.plain)
-        .font(.system(size: 10, weight: .medium))
-        .foregroundStyle(.primary.opacity(isUtilityControlsHovered ? 0.72 : 0.28))
+        .font(.system(size: 10, weight: .semibold))
+        .foregroundStyle(.primary.opacity(isUtilityControlsHovered ? 0.66 : 0.18))
+        .padding(.horizontal, 8)
+        .padding(.vertical, 7)
+        .background(Color.black.opacity(isUtilityControlsHovered ? 0.045 : 0.012), in: Capsule())
         .onHover { isUtilityControlsHovered = $0 }
+        .animation(.easeInOut(duration: 0.16), value: isUtilityControlsHovered)
     }
 
     private var formulaBar: some View {
         HStack(spacing: 8) {
-            Text(viewModel.selected.name).font(.system(.body, design: .monospaced)).frame(width: 84)
+            Text(viewModel.selected.name)
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .frame(width: 84, height: 28)
+                .background(Color(red: 0.94, green: 0.96, blue: 0.93), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
             Image(systemName: "chevron.down").font(.caption2).foregroundStyle(.secondary)
             Divider()
             Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
