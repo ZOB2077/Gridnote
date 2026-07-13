@@ -1,7 +1,7 @@
 # Gridnote Product Spec
 
-Version: `1.0`  
-Status: `Approved for MVP implementation`  
+Version: `1.0`
+Status: `Approved for MVP implementation`
 Audience: `Codex, future maintainers, and the product owner`
 
 ## 1. Product Summary

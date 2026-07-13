@@ -1,6 +1,6 @@
 # ADR 0001: Single-Window Local-First Architecture With Canonical Text Model
 
-Status: `Accepted`  
+Status: `Accepted`
 Date: `2026-07-10`
 
 ## Context

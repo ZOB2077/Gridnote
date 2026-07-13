@@ -1,6 +1,6 @@
 # Gridnote Architecture
 
-Version: `1.0`  
+Version: `1.0`
 Status: `Accepted baseline for MVP`
 
 ## 1. Architecture Goals
