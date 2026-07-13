@@ -1,6 +1,27 @@
 import Foundation
 import SwiftData
 
+enum ReadingProgressSyncSource: String {
+    case office
+    case floatingReader
+}
+
+enum ReadingProgressSync {
+    static let bookIDKey = "bookID"
+
+    static func post(bookID: UUID, source: ReadingProgressSyncSource) {
+        NotificationCenter.default.post(
+            name: .gridnoteReadingProgressDidChange,
+            object: source.rawValue,
+            userInfo: [bookIDKey: bookID]
+        )
+    }
+}
+
+extension Notification.Name {
+    static let gridnoteReadingProgressDidChange = Notification.Name("GridnoteReadingProgressDidChange")
+}
+
 final class ReadingProgressRepository {
     private let context: ModelContext
     private let encoder = JSONEncoder()

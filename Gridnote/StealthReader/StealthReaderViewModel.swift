@@ -334,6 +334,16 @@ final class StealthReaderViewModel: ObservableObject {
         searchResultText = String(localized: "Match found")
     }
 
+    func syncProgressFromOffice(bookID updatedBookID: UUID) {
+        guard updatedBookID == bookID,
+              let locator = try? ReadingProgressRepository(context: context).fetchLocator(bookID: updatedBookID) else { return }
+        let previousOffset = offset
+        restore(locator)
+        guard offset != previousOffset else { return }
+        refreshPage(animated: true, direction: offset >= previousOffset ? .forward : .backward)
+        reloadBookmarks()
+    }
+
     func applyDensity(_ density: FloatingReaderDensity) {
         self.density = density
         defaults.set(density.rawValue, forKey: Keys.density)
@@ -403,7 +413,8 @@ final class StealthReaderViewModel: ObservableObject {
 
     private func saveProgress() {
         guard let bookID, let locator = currentLocator else { return }
-        _ = try? ReadingProgressRepository(context: context).save(locator: locator, for: bookID)
+        guard (try? ReadingProgressRepository(context: context).save(locator: locator, for: bookID)) != nil else { return }
+        ReadingProgressSync.post(bookID: bookID, source: .floatingReader)
     }
 
     private var currentLocator: ReadingLocator? {

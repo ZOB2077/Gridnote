@@ -167,6 +167,7 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
     private var globalHotKeyHandler: EventHandlerRef?
     private var appResignObserver: NSObjectProtocol?
     private var readerSettingsObserver: NSObjectProtocol?
+    private var readingProgressObserver: NSObjectProtocol?
     private var focusHideTask: Task<Void, Never>?
     private var lastBookID: UUID?
     private let defaults: UserDefaults
@@ -227,6 +228,15 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
             queue: .main
         ) { [weak self] _ in
             Task { @MainActor in self?.viewModel.reloadPresentationSettings() }
+        }
+        readingProgressObserver = NotificationCenter.default.addObserver(
+            forName: .gridnoteReadingProgressDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] notification in
+            guard notification.object as? String != ReadingProgressSyncSource.floatingReader.rawValue,
+                  let bookID = notification.userInfo?[ReadingProgressSync.bookIDKey] as? UUID else { return }
+            Task { @MainActor in self?.viewModel.syncProgressFromOffice(bookID: bookID) }
         }
     }
 

@@ -43,6 +43,40 @@ final class StealthReaderViewModelTests: XCTestCase {
         XCTAssertEqual(intraBlockOffset, 80)
     }
 
+    func testSynchronizesExternalOfficeProgressWithoutWritingItBack() async throws {
+        let sourceURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("gridnote-progress-sync-\(UUID().uuidString).txt")
+        try Data((String(repeating: "A", count: 100) + "\n\n" + String(repeating: "B", count: 100)).utf8)
+            .write(to: sourceURL)
+        defer { try? FileManager.default.removeItem(at: sourceURL) }
+
+        let suiteName = "gridnote-progress-sync-tests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        defaults.set(80, forKey: "stealthReader.charactersPerPage")
+
+        let container = try GridnoteModelContainer.make(inMemory: true)
+        let context = ModelContext(container)
+        let book = try BookRepository(context: context).insert(
+            metadata: .init(title: "Progress Fixture", sourceFilename: sourceURL.lastPathComponent),
+            sourcePath: sourceURL.path,
+            format: .txt
+        )
+        let viewModel = StealthReaderViewModel(context: context, defaults: defaults)
+
+        await viewModel.load(bookID: book.id)
+        viewModel.next()
+        let officeLocator = try XCTUnwrap(ReadingProgressRepository(context: context).fetchLocator(bookID: book.id))
+        viewModel.goToStart()
+        XCTAssertEqual(viewModel.progressText, String(format: String(localized: "Record %lld of %lld"), 1, 3))
+
+        try ReadingProgressRepository(context: context).save(locator: officeLocator, for: book.id)
+        viewModel.syncProgressFromOffice(bookID: book.id)
+
+        XCTAssertEqual(viewModel.progressText, String(format: String(localized: "Record %lld of %lld"), 2, 3))
+        XCTAssertEqual(try ReadingProgressRepository(context: context).fetchLocator(bookID: book.id), officeLocator)
+    }
+
     func testFitsPageCapacityToFloatingWindowSize() throws {
         let container = try GridnoteModelContainer.make(inMemory: true)
         let suiteName = "gridnote-fit-tests-\(UUID().uuidString)"

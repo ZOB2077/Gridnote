@@ -66,6 +66,13 @@ private struct OfficeWorkspaceContent: View {
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteReaderSettingsDidChange)) { _ in
             viewModel.reloadReaderPresentation()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .gridnoteReadingProgressDidChange)) { notification in
+            guard notification.object as? String != ReadingProgressSyncSource.office.rawValue,
+                  let bookID = notification.userInfo?[ReadingProgressSync.bookIDKey] as? UUID,
+                  bookID == appState.selectedBookID else { return }
+            viewModel.syncProgressFromFloatingReader()
+            scheduleFormulaMask()
+        }
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficePreviousExcerptRequested)) { _ in
             previousExcerpt()
         }
@@ -676,18 +683,41 @@ final class OfficeWorkspaceViewModel: ObservableObject {
                 )
             default: start = 0
             }
-            applyExcerpt(startingAt: start)
+            applyExcerpt(startingAt: start, persistProgress: false)
         } catch {
             excerpt = InjectedExcerpt(startBlockIndex: 0, valuesByRow: [:], nextBlockIndex: nil)
         }
     }
 
-    private func applyExcerpt(startingAt index: Int) {
+    func syncProgressFromFloatingReader() {
+        guard let excerptBookID,
+              let locator = try? ReadingProgressRepository(context: context).fetchLocator(bookID: excerptBookID),
+              let index = globalBlockIndex(for: locator),
+              index != excerpt.startBlockIndex else { return }
+        applyExcerpt(startingAt: index, persistProgress: false)
+    }
+
+    private func applyExcerpt(startingAt index: Int, persistProgress: Bool = true) {
         excerpt = ExcerptInjector.inject(blocks: excerptBlocks, startBlockIndex: index, rowCount: 1)
         objectWillChange.send()
-        guard let excerptBookID,
+        guard persistProgress,
+              let excerptBookID,
               let locator = locator(forGlobalBlockIndex: excerpt.startBlockIndex) else { return }
-        _ = try? ReadingProgressRepository(context: context).save(locator: locator, for: excerptBookID)
+        guard (try? ReadingProgressRepository(context: context).save(locator: locator, for: excerptBookID)) != nil else { return }
+        ReadingProgressSync.post(bookID: excerptBookID, source: .office)
+    }
+
+    private func globalBlockIndex(for locator: ReadingLocator) -> Int? {
+        let location: (chapterID: String, blockIndex: Int) = switch locator {
+        case let .text(chapterID, blockIndex, _): (chapterID, blockIndex)
+        case let .epub(spineItemID, blockIndex, _): (spineItemID, blockIndex)
+        }
+        return ExcerptPositionMapper.globalBlockIndex(
+            chapterID: location.chapterID,
+            blockIndex: location.blockIndex,
+            chapters: excerptChapters,
+            totalBlockCount: excerptBlocks.count
+        )
     }
 
     private func locator(forGlobalBlockIndex index: Int) -> ReadingLocator? {
