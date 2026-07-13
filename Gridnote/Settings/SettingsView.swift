@@ -82,6 +82,12 @@ private struct SettingsContent: View {
 
                 Divider()
                 Toggle("自动遮蔽公式栏正文", isOn: $viewModel.autoMaskFormulaBar)
+                Picker("公式栏阅读行数", selection: $viewModel.formulaBarLineCount) {
+                    ForEach(OfficeFormulaMaskSettings.lineCountRange, id: \.self) { count in
+                        Text("\(count) 行").tag(count)
+                    }
+                }
+                .pickerStyle(.segmented)
                 if viewModel.autoMaskFormulaBar {
                     LabeledContent("自动遮蔽延迟") {
                         HStack(spacing: 8) {
@@ -148,6 +154,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var textOpacity = ReaderPresentationSettings.textOpacity
     @Published var autoMaskFormulaBar = OfficeFormulaMaskSettings.isEnabled
     @Published var formulaBarMaskDelay = OfficeFormulaMaskSettings.delay
+    @Published var formulaBarLineCount = OfficeFormulaMaskSettings.lineCount
     @Published var message: String?
     private let context: ModelContext
 
@@ -164,6 +171,7 @@ final class SettingsViewModel: ObservableObject {
             textOpacity = ReaderPresentationSettings.textOpacity
             autoMaskFormulaBar = OfficeFormulaMaskSettings.isEnabled
             formulaBarMaskDelay = OfficeFormulaMaskSettings.delay
+            formulaBarLineCount = OfficeFormulaMaskSettings.lineCount
             if let bookID, let alias = try AliasProfileRepository(context: context).fetch(bookID: bookID) {
                 aliasTitle = alias.aliasTitle
                 workbookTitle = alias.workbookTitle
@@ -198,7 +206,11 @@ final class SettingsViewModel: ObservableObject {
     }
 
     func saveOfficePrivacySettings() {
-        OfficeFormulaMaskSettings.save(enabled: autoMaskFormulaBar, delay: formulaBarMaskDelay)
+        OfficeFormulaMaskSettings.save(
+            enabled: autoMaskFormulaBar,
+            delay: formulaBarMaskDelay,
+            lineCount: formulaBarLineCount
+        )
         NotificationCenter.default.post(name: .gridnoteOfficePrivacySettingsDidChange, object: nil)
         message = "办公隐私设置已保存"
     }

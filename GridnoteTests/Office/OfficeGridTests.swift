@@ -77,8 +77,9 @@ final class OfficeGridTests: XCTestCase {
         XCTAssertTrue(OfficeFormulaMaskSettings.isEnabled(in: defaults))
         XCTAssertEqual(OfficeFormulaMaskSettings.delay(in: defaults), OfficeFormulaMaskSettings.defaultDelay)
 
-        OfficeFormulaMaskSettings.save(enabled: false, delay: 100, to: defaults)
+        OfficeFormulaMaskSettings.save(enabled: false, delay: 100, lineCount: 100, to: defaults)
         XCTAssertFalse(OfficeFormulaMaskSettings.isEnabled(in: defaults))
         XCTAssertEqual(OfficeFormulaMaskSettings.delay(in: defaults), OfficeFormulaMaskSettings.delayRange.upperBound)
+        XCTAssertEqual(OfficeFormulaMaskSettings.lineCount(in: defaults), OfficeFormulaMaskSettings.lineCountRange.upperBound)
     }
 }

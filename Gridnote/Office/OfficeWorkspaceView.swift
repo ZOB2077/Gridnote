@@ -21,6 +21,7 @@ private struct OfficeWorkspaceContent: View {
     @State private var findMessage = ""
     @State private var actionStatus = ""
     @State private var formulaMaskTask: Task<Void, Never>?
+    @State private var formulaBarLineCount = OfficeFormulaMaskSettings.lineCount
     private let context: ModelContext
 
     init(context: ModelContext) {
@@ -79,6 +80,7 @@ private struct OfficeWorkspaceContent: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficePrivacySettingsDidChange)) { _ in
             formulaMaskTask?.cancel()
+            formulaBarLineCount = OfficeFormulaMaskSettings.lineCount
             if OfficeFormulaMaskSettings.isEnabled {
                 scheduleFormulaMask()
             } else {
@@ -191,7 +193,7 @@ private struct OfficeWorkspaceContent: View {
                     Text(viewModel.formulaBarValue)
                         .font(.system(size: 13, design: .serif))
                         .foregroundStyle(viewModel.readerTextColor.opacity(viewModel.readerTextOpacity))
-                        .lineLimit(2)
+                        .lineLimit(viewModel.isExcerptConcealed ? 1 : formulaBarLineCount)
                         .multilineTextAlignment(.leading)
                         .textSelection(.enabled)
                         .onTapGesture { revealFormulaBar() }
@@ -205,9 +207,14 @@ private struct OfficeWorkspaceContent: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             utilityControls
         }
-        .padding(.horizontal, 12).frame(height: 62)
+        .padding(.horizontal, 12).frame(height: formulaBarHeight)
         .background(.white)
         .overlay(alignment: .bottom) { Divider() }
+    }
+
+    private var formulaBarHeight: CGFloat {
+        guard viewModel.hasFormulaExcerpt, !viewModel.isExcerptConcealed else { return 46 }
+        return max(58, CGFloat(formulaBarLineCount) * 22 + 18)
     }
 
     private var findBar: some View {
@@ -376,9 +383,12 @@ enum OfficeExcerptSearchDirection {
 
 enum OfficeFormulaMaskSettings {
     static let delayRange: ClosedRange<Double> = 3...30
+    static let lineCountRange: ClosedRange<Int> = 1...5
     static let defaultDelay = 8.0
+    static let defaultLineCount = 2
     private static let enabledKey = "officePrivacy.autoMaskFormulaBar"
     private static let delayKey = "officePrivacy.formulaBarMaskDelay"
+    private static let lineCountKey = "officePrivacy.formulaBarReadingLineCount"
 
     static func isEnabled(in defaults: UserDefaults = .standard) -> Bool {
         defaults.object(forKey: enabledKey) as? Bool ?? true
@@ -388,12 +398,18 @@ enum OfficeFormulaMaskSettings {
         min(max(defaults.object(forKey: delayKey) as? Double ?? defaultDelay, delayRange.lowerBound), delayRange.upperBound)
     }
 
+    static func lineCount(in defaults: UserDefaults = .standard) -> Int {
+        min(max(defaults.object(forKey: lineCountKey) as? Int ?? defaultLineCount, lineCountRange.lowerBound), lineCountRange.upperBound)
+    }
+
     static var isEnabled: Bool { isEnabled(in: .standard) }
     static var delay: Double { delay(in: .standard) }
+    static var lineCount: Int { lineCount(in: .standard) }
 
-    static func save(enabled: Bool, delay: Double, to defaults: UserDefaults = .standard) {
+    static func save(enabled: Bool, delay: Double, lineCount: Int = defaultLineCount, to defaults: UserDefaults = .standard) {
         defaults.set(enabled, forKey: enabledKey)
         defaults.set(min(max(delay, delayRange.lowerBound), delayRange.upperBound), forKey: delayKey)
+        defaults.set(min(max(lineCount, lineCountRange.lowerBound), lineCountRange.upperBound), forKey: lineCountKey)
     }
 }
 
