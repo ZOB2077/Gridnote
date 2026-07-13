@@ -105,6 +105,19 @@ final class StealthReaderViewModelTests: XCTestCase {
         XCTAssertFalse(FloatingReaderVisibilityAction.shouldShow(isVisible: true))
     }
 
+    func testFocusShieldSettingsClampAndPersist() throws {
+        let suiteName = "gridnote-focus-shield-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        XCTAssertEqual(FloatingReaderFocusShieldSettings.delay(in: defaults), FloatingReaderFocusShieldSettings.defaultDelay)
+        XCTAssertEqual(FloatingReaderFocusShieldSettings.usesFade(in: defaults), FloatingReaderFocusShieldSettings.defaultUsesFade)
+
+        FloatingReaderFocusShieldSettings.save(delay: 99, usesFade: false, to: defaults)
+        XCTAssertEqual(FloatingReaderFocusShieldSettings.delay(in: defaults), FloatingReaderFocusShieldSettings.delayRange.upperBound)
+        XCTAssertFalse(FloatingReaderFocusShieldSettings.usesFade(in: defaults))
+    }
+
     func testShortcutRoutingUsesOfficeFormulaBarWhenFloatingReaderIsHidden() {
         XCTAssertEqual(
             StealthShortcutRouter.route(for: .previous, isFloatingReaderVisible: false, isGridnoteActive: true),

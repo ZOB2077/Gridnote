@@ -26,6 +26,19 @@ final class OfficeGridTests: XCTestCase {
         XCTAssertEqual(snapshot[OfficeCellCoordinate(row: 1, column: 7)], "100.00%")
     }
 
+    func testEveryDisguiseTemplateFillsTheVisiblePhoneRentalGrid() {
+        for template in OfficeTemplateFamily.allCases {
+            let snapshot = OfficeGridSnapshot.snapshot(for: template)
+            for row in 0..<OfficeGridSnapshot.rowCount {
+                for column in 0..<OfficeGridSnapshot.columnCount {
+                    XCTAssertFalse(snapshot[OfficeCellCoordinate(row: row, column: column)].isEmpty, "\(template.rawValue) has an empty \(row),\(column)")
+                }
+            }
+        }
+        XCTAssertEqual(OfficeGridSnapshot.channelConversion[OfficeCellCoordinate(row: 0, column: 5)], "曝光量")
+        XCTAssertEqual(OfficeGridSnapshot.inventoryFulfillment[OfficeCellCoordinate(row: 0, column: 6)], "可租库存")
+    }
+
     func testOldRentalGridIsRecognizedForReferenceStyleMigration() {
         var legacy = OfficeGridSnapshot(values: [:])
         legacy[OfficeCellCoordinate(row: 0, column: 0)] = "日期"
@@ -47,6 +60,21 @@ final class OfficeGridTests: XCTestCase {
         XCTAssertEqual(reloaded.selectedRow, 3)
         XCTAssertEqual(reloaded.selectedColumn, 2)
         XCTAssertEqual(reloaded.activeSheetName, "Weekly Plan")
+    }
+
+    func testApplyingDisguiseTemplatePersistsItsDataAndSheetName() throws {
+        let container = try GridnoteModelContainer.make(inMemory: true)
+        let context = ModelContext(container)
+        let repository = OfficeSheetRepository(context: context)
+        let record = try repository.fetchOrCreate(bookID: nil)
+
+        let applied = try repository.apply(template: .budget, to: record)
+        let reloaded = try repository.fetchOrCreate(bookID: nil)
+
+        XCTAssertEqual(reloaded.templateFamilyRawValue, OfficeTemplateFamily.budget.rawValue)
+        XCTAssertEqual(reloaded.activeSheetName, OfficeTemplateFamily.budget.defaultSheetName)
+        XCTAssertEqual(repository.snapshot(from: reloaded), applied)
+        XCTAssertEqual(applied[OfficeCellCoordinate(row: 0, column: 6)], "可租库存")
     }
 
     func testExcerptSearchWrapsInBothDirections() {
@@ -77,9 +105,11 @@ final class OfficeGridTests: XCTestCase {
         XCTAssertTrue(OfficeFormulaMaskSettings.isEnabled(in: defaults))
         XCTAssertEqual(OfficeFormulaMaskSettings.delay(in: defaults), OfficeFormulaMaskSettings.defaultDelay)
 
-        OfficeFormulaMaskSettings.save(enabled: false, delay: 100, lineCount: 100, to: defaults)
+        OfficeFormulaMaskSettings.save(enabled: false, delay: 100, lineCount: 100, masksOnPointerExit: false, pointerExitDelay: 100, to: defaults)
         XCTAssertFalse(OfficeFormulaMaskSettings.isEnabled(in: defaults))
         XCTAssertEqual(OfficeFormulaMaskSettings.delay(in: defaults), OfficeFormulaMaskSettings.delayRange.upperBound)
         XCTAssertEqual(OfficeFormulaMaskSettings.lineCount(in: defaults), OfficeFormulaMaskSettings.lineCountRange.upperBound)
+        XCTAssertFalse(OfficeFormulaMaskSettings.masksOnPointerExit(in: defaults))
+        XCTAssertEqual(OfficeFormulaMaskSettings.pointerExitDelay(in: defaults), OfficeFormulaMaskSettings.pointerExitDelayRange.upperBound)
     }
 }

@@ -55,6 +55,26 @@ private struct SettingsContent: View {
                     get: { stealthController.hidesOnAppResignActive },
                     set: { stealthController.setHidesOnAppResignActive($0) }
                 ))
+                if stealthController.hidesOnAppResignActive {
+                    Toggle("失焦时使用渐隐", isOn: Binding(
+                        get: { stealthController.usesFocusShieldFade },
+                        set: { stealthController.setFocusShield(delay: stealthController.focusShieldDelay, usesFade: $0) }
+                    ))
+                    LabeledContent("失焦遮蔽延迟") {
+                        HStack(spacing: 8) {
+                            Slider(value: Binding(
+                                get: { stealthController.focusShieldDelay },
+                                set: { stealthController.setFocusShield(delay: $0, usesFade: stealthController.usesFocusShieldFade) }
+                            ), in: FloatingReaderFocusShieldSettings.delayRange, step: 0.1)
+                            Text(String(format: "%.1f 秒", stealthController.focusShieldDelay))
+                                .monospacedDigit()
+                                .frame(width: 46, alignment: .trailing)
+                        }
+                    }
+                    Text("默认立即遮蔽。设置延迟后，悬浮阅读会在延迟结束时淡出；公式栏会立即切回业务备注。")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Toggle("Snap Floating Reader to screen edges", isOn: Binding(
                     get: { stealthController.snapsToScreenEdges },
                     set: { stealthController.setSnapsToScreenEdges($0) }
@@ -81,6 +101,14 @@ private struct SettingsContent: View {
                 }
 
                 Divider()
+                Picker("办公数据主题", selection: $viewModel.officeTemplateFamily) {
+                    ForEach(OfficeTemplateFamily.allCases, id: \.self) { template in
+                        Text(template.disguiseTitle).tag(template)
+                    }
+                }
+                Text("切换后会将当前伪装表格替换为对应的手机租赁行业数据；阅读进度和书签不受影响。")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 Toggle("自动遮蔽公式栏正文", isOn: $viewModel.autoMaskFormulaBar)
                 Picker("公式栏阅读行数", selection: $viewModel.formulaBarLineCount) {
                     ForEach(OfficeFormulaMaskSettings.lineCountRange, id: \.self) { count in
@@ -95,6 +123,17 @@ private struct SettingsContent: View {
                             Text("\(Int(viewModel.formulaBarMaskDelay.rounded())) 秒")
                                 .monospacedDigit()
                                 .frame(width: 42, alignment: .trailing)
+                        }
+                    }
+                }
+                Toggle("鼠标离开公式栏后遮蔽", isOn: $viewModel.maskFormulaBarOnPointerExit)
+                if viewModel.autoMaskFormulaBar && viewModel.maskFormulaBarOnPointerExit {
+                    LabeledContent("离开后遮蔽延迟") {
+                        HStack(spacing: 8) {
+                            Slider(value: $viewModel.formulaBarPointerExitDelay, in: OfficeFormulaMaskSettings.pointerExitDelayRange, step: 0.05)
+                            Text(String(format: "%.2f 秒", viewModel.formulaBarPointerExitDelay))
+                                .monospacedDigit()
+                                .frame(width: 50, alignment: .trailing)
                         }
                     }
                 }
@@ -155,6 +194,9 @@ final class SettingsViewModel: ObservableObject {
     @Published var autoMaskFormulaBar = OfficeFormulaMaskSettings.isEnabled
     @Published var formulaBarMaskDelay = OfficeFormulaMaskSettings.delay
     @Published var formulaBarLineCount = OfficeFormulaMaskSettings.lineCount
+    @Published var maskFormulaBarOnPointerExit = OfficeFormulaMaskSettings.masksOnPointerExit
+    @Published var formulaBarPointerExitDelay = OfficeFormulaMaskSettings.pointerExitDelay
+    @Published var officeTemplateFamily: OfficeTemplateFamily = .operations
     @Published var message: String?
     private let context: ModelContext
 
@@ -172,6 +214,9 @@ final class SettingsViewModel: ObservableObject {
             autoMaskFormulaBar = OfficeFormulaMaskSettings.isEnabled
             formulaBarMaskDelay = OfficeFormulaMaskSettings.delay
             formulaBarLineCount = OfficeFormulaMaskSettings.lineCount
+            maskFormulaBarOnPointerExit = OfficeFormulaMaskSettings.masksOnPointerExit
+            formulaBarPointerExitDelay = OfficeFormulaMaskSettings.pointerExitDelay
+            officeTemplateFamily = OfficeDisguiseThemeSettings.templateFamily
             if let bookID, let alias = try AliasProfileRepository(context: context).fetch(bookID: bookID) {
                 aliasTitle = alias.aliasTitle
                 workbookTitle = alias.workbookTitle
@@ -209,10 +254,26 @@ final class SettingsViewModel: ObservableObject {
         OfficeFormulaMaskSettings.save(
             enabled: autoMaskFormulaBar,
             delay: formulaBarMaskDelay,
-            lineCount: formulaBarLineCount
+            lineCount: formulaBarLineCount,
+            masksOnPointerExit: maskFormulaBarOnPointerExit,
+            pointerExitDelay: formulaBarPointerExitDelay
         )
         NotificationCenter.default.post(name: .gridnoteOfficePrivacySettingsDidChange, object: nil)
+        OfficeDisguiseThemeSettings.save(templateFamily: officeTemplateFamily)
+        NotificationCenter.default.post(name: .gridnoteOfficeTemplateRequested, object: officeTemplateFamily.rawValue)
         message = "办公隐私设置已保存"
+    }
+}
+
+enum OfficeDisguiseThemeSettings {
+    private static let key = "officePrivacy.disguiseTemplateFamily"
+
+    static var templateFamily: OfficeTemplateFamily {
+        OfficeTemplateFamily(rawValue: UserDefaults.standard.string(forKey: key) ?? "") ?? .operations
+    }
+
+    static func save(templateFamily: OfficeTemplateFamily, to defaults: UserDefaults = .standard) {
+        defaults.set(templateFamily.rawValue, forKey: key)
     }
 }
 
@@ -220,4 +281,5 @@ extension Notification.Name {
     static let gridnoteAliasDidChange = Notification.Name("GridnoteAliasDidChange")
     static let gridnoteReaderSettingsDidChange = Notification.Name("GridnoteReaderSettingsDidChange")
     static let gridnoteOfficePrivacySettingsDidChange = Notification.Name("GridnoteOfficePrivacySettingsDidChange")
+    static let gridnoteOfficeTemplateRequested = Notification.Name("GridnoteOfficeTemplateRequested")
 }

@@ -99,6 +99,27 @@ struct SuperStealthDisplaySize: Equatable {
     }
 }
 
+enum FloatingReaderFocusShieldSettings {
+    static let delayRange: ClosedRange<Double> = 0...1.5
+    static let defaultDelay = 0.0
+    static let defaultUsesFade = true
+    private static let delayKey = "stealthReader.focusShieldDelay"
+    private static let usesFadeKey = "stealthReader.focusShieldUsesFade"
+
+    static func delay(in defaults: UserDefaults = .standard) -> Double {
+        min(max(defaults.object(forKey: delayKey) as? Double ?? defaultDelay, delayRange.lowerBound), delayRange.upperBound)
+    }
+
+    static func usesFade(in defaults: UserDefaults = .standard) -> Bool {
+        defaults.object(forKey: usesFadeKey) as? Bool ?? defaultUsesFade
+    }
+
+    static func save(delay: Double, usesFade: Bool, to defaults: UserDefaults = .standard) {
+        defaults.set(min(max(delay, delayRange.lowerBound), delayRange.upperBound), forKey: delayKey)
+        defaults.set(usesFade, forKey: usesFadeKey)
+    }
+}
+
 enum FloatingReaderVisibilityAction {
     static func shouldShow(isVisible: Bool) -> Bool { !isVisible }
 }
@@ -134,6 +155,8 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
     @Published private(set) var nextShortcut: StealthShortcut
     @Published private(set) var toggleShortcut: StealthShortcut
     @Published private(set) var hidesOnAppResignActive: Bool
+    @Published private(set) var focusShieldDelay: Double
+    @Published private(set) var usesFocusShieldFade: Bool
     @Published private(set) var snapsToScreenEdges: Bool
     @Published private(set) var superStealthDisplaySize: SuperStealthDisplaySize
     private var panel: NSPanel?
@@ -143,6 +166,7 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
     private var globalHotKeyHandler: EventHandlerRef?
     private var appResignObserver: NSObjectProtocol?
     private var readerSettingsObserver: NSObjectProtocol?
+    private var focusHideTask: Task<Void, Never>?
     private var lastBookID: UUID?
     private let defaults: UserDefaults
 
@@ -171,6 +195,8 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
         nextShortcut = StealthShortcut(rawValue: defaults.string(forKey: Keys.nextShortcut) ?? "") ?? .f8
         toggleShortcut = StealthShortcut(rawValue: defaults.string(forKey: Keys.toggleShortcut) ?? "") ?? .f9
         hidesOnAppResignActive = defaults.object(forKey: Keys.hidesOnAppResignActive) as? Bool ?? true
+        focusShieldDelay = FloatingReaderFocusShieldSettings.delay(in: defaults)
+        usesFocusShieldFade = FloatingReaderFocusShieldSettings.usesFade(in: defaults)
         snapsToScreenEdges = defaults.object(forKey: Keys.snapsToScreenEdges) as? Bool ?? true
         superStealthDisplaySize = SuperStealthDisplaySize(
             width: CGFloat(defaults.object(forKey: Keys.superStealthWidth) as? Double ?? Double(SuperStealthDisplaySize.default.width)),
@@ -205,14 +231,26 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
 
     func show(bookID: UUID?) {
         let panel = panel ?? makePanel()
+        focusHideTask?.cancel()
+        panel.alphaValue = usesFocusShieldFade ? 0 : 1
         panel.orderFrontRegardless()
+        if usesFocusShieldFade {
+            Task { @MainActor in
+                await NSAnimationContext.runAnimationGroup { context in
+                    context.duration = 0.16
+                    panel.animator().alphaValue = 1
+                }
+            }
+        }
         lastBookID = bookID ?? lastBookID
         loadTask?.cancel()
         loadTask = Task { await viewModel.load(bookID: bookID) }
     }
 
     func hide() {
+        focusHideTask?.cancel()
         panel?.orderOut(nil)
+        panel?.alphaValue = 1
         NotificationCenter.default.post(name: .gridnotePrivacyShieldRequested, object: nil)
     }
 
@@ -250,7 +288,14 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
     func setHidesOnAppResignActive(_ enabled: Bool) {
         hidesOnAppResignActive = enabled
         defaults.set(enabled, forKey: Keys.hidesOnAppResignActive)
-        panel?.hidesOnDeactivate = enabled
+        // Focus loss is handled manually to allow an optional short fade-out.
+        panel?.hidesOnDeactivate = false
+    }
+
+    func setFocusShield(delay: Double, usesFade: Bool) {
+        focusShieldDelay = min(max(delay, FloatingReaderFocusShieldSettings.delayRange.lowerBound), FloatingReaderFocusShieldSettings.delayRange.upperBound)
+        usesFocusShieldFade = usesFade
+        FloatingReaderFocusShieldSettings.save(delay: focusShieldDelay, usesFade: usesFade, to: defaults)
     }
 
     func setSnapsToScreenEdges(_ enabled: Bool) {
@@ -327,7 +372,7 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.isMovableByWindowBackground = true
         panel.delegate = self
-        panel.hidesOnDeactivate = hidesOnAppResignActive
+        panel.hidesOnDeactivate = false
         panel.isRestorable = false
         updatePanelSizingForCurrentMode(panel)
 
@@ -459,7 +504,26 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
 
     private func hideForFocusLoss() {
         guard hidesOnAppResignActive else { return }
-        hide()
+        NotificationCenter.default.post(name: .gridnotePrivacyShieldRequested, object: nil)
+        guard let panel, panel.isVisible else { return }
+        focusHideTask?.cancel()
+        let delay = focusShieldDelay
+        let usesFade = usesFocusShieldFade
+        focusHideTask = Task { @MainActor in
+            if delay > 0 {
+                try? await Task.sleep(for: .seconds(delay))
+            }
+            guard !Task.isCancelled else { return }
+            if usesFade {
+                await NSAnimationContext.runAnimationGroup { context in
+                    context.duration = 0.14
+                    panel.animator().alphaValue = 0
+                }
+                guard !Task.isCancelled else { return }
+            }
+            panel.orderOut(nil)
+            panel.alphaValue = 1
+        }
     }
 }
 

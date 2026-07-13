@@ -10,6 +10,7 @@ final class DataHubApplicationDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    @MainActor
     static func applyMenuTitle() {
         NSApp.mainMenu?.item(at: 0)?.title = "Data Hub"
         NSApp.mainMenu?.item(at: 0)?.submenu?.title = "Data Hub"

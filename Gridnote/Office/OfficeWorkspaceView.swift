@@ -87,6 +87,11 @@ private struct OfficeWorkspaceContent: View {
                 viewModel.revealExcerpt()
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficeTemplateRequested)) { notification in
+            guard let rawValue = notification.object as? String,
+                  let template = OfficeTemplateFamily(rawValue: rawValue) else { return }
+            viewModel.apply(template: template)
+        }
         .onDisappear { formulaMaskTask?.cancel() }
     }
 
@@ -205,10 +210,21 @@ private struct OfficeWorkspaceContent: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .contentTransition(.opacity)
+            .animation(.easeInOut(duration: 0.16), value: viewModel.isExcerptConcealed)
         }
         .padding(.horizontal, 12).frame(height: formulaBarHeight)
         .background(.white)
         .overlay(alignment: .bottom) { Divider() }
+        .animation(.easeInOut(duration: 0.16), value: formulaBarHeight)
+        .onHover { isHovering in
+            guard viewModel.hasFormulaExcerpt else { return }
+            if isHovering {
+                revealFormulaBar()
+            } else if OfficeFormulaMaskSettings.masksOnPointerExit {
+                scheduleFormulaMask(after: OfficeFormulaMaskSettings.pointerExitDelay)
+            }
+        }
     }
 
     private var formulaBarHeight: CGFloat {
@@ -264,10 +280,10 @@ private struct OfficeWorkspaceContent: View {
         scheduleFormulaMask()
     }
 
-    private func scheduleFormulaMask() {
+    private func scheduleFormulaMask(after customDelay: Double? = nil) {
         formulaMaskTask?.cancel()
         guard OfficeFormulaMaskSettings.isEnabled, viewModel.hasFormulaExcerpt else { return }
-        let delay = OfficeFormulaMaskSettings.delay
+        let delay = customDelay ?? OfficeFormulaMaskSettings.delay
         formulaMaskTask = Task { @MainActor in
             try? await Task.sleep(for: .seconds(delay))
             guard !Task.isCancelled else { return }
@@ -382,12 +398,16 @@ enum OfficeExcerptSearchDirection {
 
 enum OfficeFormulaMaskSettings {
     static let delayRange: ClosedRange<Double> = 3...30
+    static let pointerExitDelayRange: ClosedRange<Double> = 0.2...3
     static let lineCountRange: ClosedRange<Int> = 1...5
     static let defaultDelay = 8.0
     static let defaultLineCount = 2
+    static let defaultPointerExitDelay = 0.45
     private static let enabledKey = "officePrivacy.autoMaskFormulaBar"
     private static let delayKey = "officePrivacy.formulaBarMaskDelay"
     private static let lineCountKey = "officePrivacy.formulaBarReadingLineCount"
+    private static let maskOnPointerExitKey = "officePrivacy.formulaBarMaskOnPointerExit"
+    private static let pointerExitDelayKey = "officePrivacy.formulaBarPointerExitDelay"
 
     static func isEnabled(in defaults: UserDefaults = .standard) -> Bool {
         defaults.object(forKey: enabledKey) as? Bool ?? true
@@ -401,14 +421,33 @@ enum OfficeFormulaMaskSettings {
         min(max(defaults.object(forKey: lineCountKey) as? Int ?? defaultLineCount, lineCountRange.lowerBound), lineCountRange.upperBound)
     }
 
+    static func masksOnPointerExit(in defaults: UserDefaults = .standard) -> Bool {
+        defaults.object(forKey: maskOnPointerExitKey) as? Bool ?? true
+    }
+
+    static func pointerExitDelay(in defaults: UserDefaults = .standard) -> Double {
+        min(max(defaults.object(forKey: pointerExitDelayKey) as? Double ?? defaultPointerExitDelay, pointerExitDelayRange.lowerBound), pointerExitDelayRange.upperBound)
+    }
+
     static var isEnabled: Bool { isEnabled(in: .standard) }
     static var delay: Double { delay(in: .standard) }
     static var lineCount: Int { lineCount(in: .standard) }
+    static var masksOnPointerExit: Bool { masksOnPointerExit(in: .standard) }
+    static var pointerExitDelay: Double { pointerExitDelay(in: .standard) }
 
-    static func save(enabled: Bool, delay: Double, lineCount: Int = defaultLineCount, to defaults: UserDefaults = .standard) {
+    static func save(
+        enabled: Bool,
+        delay: Double,
+        lineCount: Int = defaultLineCount,
+        masksOnPointerExit: Bool = true,
+        pointerExitDelay: Double = defaultPointerExitDelay,
+        to defaults: UserDefaults = .standard
+    ) {
         defaults.set(enabled, forKey: enabledKey)
         defaults.set(min(max(delay, delayRange.lowerBound), delayRange.upperBound), forKey: delayKey)
         defaults.set(min(max(lineCount, lineCountRange.lowerBound), lineCountRange.upperBound), forKey: lineCountKey)
+        defaults.set(masksOnPointerExit, forKey: maskOnPointerExitKey)
+        defaults.set(min(max(pointerExitDelay, pointerExitDelayRange.lowerBound), pointerExitDelayRange.upperBound), forKey: pointerExitDelayKey)
     }
 }
 
@@ -444,6 +483,7 @@ final class OfficeWorkspaceViewModel: ObservableObject {
     @Published private(set) var isExcerptConcealed = false
     @Published private(set) var readerTextColor = ReaderPresentationSettings.textColor
     @Published private(set) var readerTextOpacity = ReaderPresentationSettings.textOpacity
+    @Published private(set) var templateFamily: OfficeTemplateFamily = .operations
     private let context: ModelContext
     private var record: OfficeSheetRecord?
     private var excerptBlocks: [TextBlock] = []
@@ -472,6 +512,17 @@ final class OfficeWorkspaceViewModel: ObservableObject {
     func updateSelectedValue(_ value: String) { editorValue = value }
     func commitSelectedValue() { snapshot[selected] = editorValue; persist() }
 
+    func apply(template: OfficeTemplateFamily) {
+        guard let record else { return }
+        do {
+            snapshot = try OfficeSheetRepository(context: context).apply(template: template, to: record)
+            selected = OfficeCellCoordinate(row: 0, column: 0)
+            editorValue = snapshot[selected]
+            sheetName = template.defaultSheetName
+            templateFamily = template
+        } catch {}
+    }
+
     func reloadReaderPresentation() {
         readerTextColor = ReaderPresentationSettings.textColor
         readerTextOpacity = ReaderPresentationSettings.textOpacity
@@ -486,6 +537,7 @@ final class OfficeWorkspaceViewModel: ObservableObject {
             selected = OfficeCellCoordinate(row: record.selectedRow, column: record.selectedColumn)
             editorValue = snapshot[selected]
             sheetName = record.activeSheetName == "Overview" ? "5_明细数据" : record.activeSheetName
+            templateFamily = OfficeTemplateFamily(rawValue: record.templateFamilyRawValue) ?? .operations
             loadExcerpt(bookID: bookID)
         } catch {}
     }

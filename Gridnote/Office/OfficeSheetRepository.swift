@@ -40,4 +40,15 @@ final class OfficeSheetRepository {
         record.activeSheetName = sheetName
         try context.save()
     }
+
+    func apply(template: OfficeTemplateFamily, to record: OfficeSheetRecord) throws -> OfficeGridSnapshot {
+        let snapshot = OfficeGridSnapshot.snapshot(for: template)
+        record.templateFamilyRawValue = template.rawValue
+        record.gridValuesData = try encoder.encode(snapshot)
+        record.activeSheetName = template.defaultSheetName
+        record.selectedRow = 0
+        record.selectedColumn = 0
+        try context.save()
+        return snapshot
+    }
 }
