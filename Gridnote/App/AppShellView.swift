@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import AppKit
 
 struct AppShellView: View {
     @EnvironmentObject private var appState: AppState
@@ -36,6 +37,7 @@ struct AppShellView: View {
             updateWindowTitle()
             stealthController.setCurrentBook(appState.selectedBookID)
         }
+        .onAppear(perform: updateApplicationMenuTitle)
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteAliasDidChange)) { _ in updateWindowTitle() }
     }
 
@@ -50,6 +52,15 @@ struct AppShellView: View {
 
     private func showStealthReader() {
         stealthController.show(bookID: appState.selectedBookID)
+    }
+
+    private func updateApplicationMenuTitle() {
+        DispatchQueue.main.async {
+            DataHubApplicationDelegate.applyMenuTitle()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            DataHubApplicationDelegate.applyMenuTitle()
+        }
     }
 }
 

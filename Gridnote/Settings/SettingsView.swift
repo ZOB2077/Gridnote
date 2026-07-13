@@ -51,7 +51,7 @@ private struct SettingsContent: View {
                         set: { stealthController.setSuperStealthDisplaySize(width: stealthController.superStealthDisplaySize.width, height: CGFloat($0)) }
                     ), range: SuperStealthDisplaySize.heightRange)
                 }
-                Toggle("Hide Floating Reader when Gridnote loses focus", isOn: Binding(
+                Toggle("Hide Floating Reader when Data Hub loses focus", isOn: Binding(
                     get: { stealthController.hidesOnAppResignActive },
                     set: { stealthController.setHidesOnAppResignActive($0) }
                 ))

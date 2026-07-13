@@ -37,7 +37,7 @@ struct StealthMenuBarView: View {
             }
         }
         Divider()
-        Button("Open Gridnote") {
+        Button("Open Data Hub") {
             NSApp.activate(ignoringOtherApps: true)
             NSApp.windows.first(where: { $0.canBecomeMain })?.makeKeyAndOrderFront(nil)
         }

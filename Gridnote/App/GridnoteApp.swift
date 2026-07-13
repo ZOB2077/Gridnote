@@ -1,8 +1,24 @@
 import SwiftUI
 import SwiftData
+import AppKit
+
+final class DataHubApplicationDelegate: NSObject, NSApplicationDelegate {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        // SwiftUI builds the default application menu from the executable name.
+        DispatchQueue.main.async {
+            DataHubApplicationDelegate.applyMenuTitle()
+        }
+    }
+
+    static func applyMenuTitle() {
+        NSApp.mainMenu?.item(at: 0)?.title = "Data Hub"
+        NSApp.mainMenu?.item(at: 0)?.submenu?.title = "Data Hub"
+    }
+}
 
 @main
 struct GridnoteApp: App {
+    @NSApplicationDelegateAdaptor(DataHubApplicationDelegate.self) private var applicationDelegate
     @StateObject private var appState = AppState()
     @StateObject private var stealthController: StealthOverlayController
     private let modelContainer: ModelContainer
