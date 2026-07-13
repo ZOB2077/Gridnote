@@ -179,8 +179,11 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
         viewModel = StealthReaderViewModel(context: context, defaults: defaults)
         super.init()
         keyboardMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self, self.panel?.isVisible == true else { return event }
-            return self.handleKeyboardEvent(event) ? nil : event
+            guard let self else { return event }
+            if self.panel?.isVisible == true {
+                return self.handleKeyboardEvent(event) ? nil : event
+            }
+            return self.handleOfficeKeyboardEvent(event) ? nil : event
         }
         installGlobalHotKeyHandler()
         registerGlobalHotKeys()
@@ -290,6 +293,22 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
         case 124, 49: viewModel.next(); return true // Right arrow or space.
         case 53: hide(); return true // Escape.
         default: return false
+        }
+    }
+
+    private func handleOfficeKeyboardEvent(_ event: NSEvent) -> Bool {
+        guard NSApp.isActive else { return false }
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        guard modifiers == [.command] else { return false }
+        switch event.charactersIgnoringModifiers?.lowercased() {
+        case "f":
+            NotificationCenter.default.post(name: .gridnoteOfficeSearchRequested, object: nil)
+            return true
+        case "b":
+            NotificationCenter.default.post(name: .gridnoteOfficeBookmarkRequested, object: nil)
+            return true
+        default:
+            return false
         }
     }
 
@@ -449,4 +468,6 @@ extension Notification.Name {
     static let gridnotePrivacyShieldRequested = Notification.Name("GridnotePrivacyShieldRequested")
     static let gridnoteOfficePreviousExcerptRequested = Notification.Name("GridnoteOfficePreviousExcerptRequested")
     static let gridnoteOfficeNextExcerptRequested = Notification.Name("GridnoteOfficeNextExcerptRequested")
+    static let gridnoteOfficeSearchRequested = Notification.Name("GridnoteOfficeSearchRequested")
+    static let gridnoteOfficeBookmarkRequested = Notification.Name("GridnoteOfficeBookmarkRequested")
 }

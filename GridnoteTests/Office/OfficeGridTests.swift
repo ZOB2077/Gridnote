@@ -48,4 +48,24 @@ final class OfficeGridTests: XCTestCase {
         XCTAssertEqual(reloaded.selectedColumn, 2)
         XCTAssertEqual(reloaded.activeSheetName, "Weekly Plan")
     }
+
+    func testExcerptSearchWrapsInBothDirections() {
+        let blocks = [
+            TextBlock(id: "one", text: "首段租赁日报"),
+            TextBlock(id: "two", text: "中段包含目标词"),
+            TextBlock(id: "three", text: "末段目标词再次出现")
+        ]
+
+        XCTAssertEqual(
+            OfficeExcerptSearch.matchingBlockIndex(in: blocks, query: "目标词", currentIndex: 0, direction: .next),
+            1
+        )
+        XCTAssertEqual(
+            OfficeExcerptSearch.matchingBlockIndex(in: blocks, query: "目标词", currentIndex: 0, direction: .previous),
+            2
+        )
+        XCTAssertNil(
+            OfficeExcerptSearch.matchingBlockIndex(in: blocks, query: "不存在", currentIndex: 0, direction: .next)
+        )
+    }
 }

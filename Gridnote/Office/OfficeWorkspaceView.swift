@@ -15,6 +15,10 @@ private struct OfficeWorkspaceContent: View {
     @State private var importMessage: String?
     @State private var didHandleLaunchFixture = false
     @State private var isUtilityControlsHovered = false
+    @State private var isFindBarPresented = false
+    @State private var findQuery = ""
+    @State private var findMessage = ""
+    @State private var actionStatus = ""
     private let context: ModelContext
 
     init(context: ModelContext) {
@@ -26,6 +30,7 @@ private struct OfficeWorkspaceContent: View {
         VStack(spacing: 0) {
             officeToolbar
             formulaBar
+            if isFindBarPresented { findBar }
             spreadsheet
             sheetBar
             statusBar
@@ -60,6 +65,13 @@ private struct OfficeWorkspaceContent: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficeNextExcerptRequested)) { _ in
             viewModel.nextExcerpt()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficeSearchRequested)) { _ in
+            isFindBarPresented = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficeBookmarkRequested)) { _ in
+            guard let isAdded = viewModel.toggleBookmark() else { return }
+            actionStatus = isAdded ? "已添加标记" : "已取消标记"
         }
     }
 
@@ -185,6 +197,37 @@ private struct OfficeWorkspaceContent: View {
         .overlay(alignment: .bottom) { Divider() }
     }
 
+    private var findBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .foregroundStyle(.secondary)
+            TextField("查找内容", text: $findQuery)
+                .textFieldStyle(.roundedBorder)
+                .frame(width: 220)
+                .onSubmit { find(.next) }
+            Button("上一个") { find(.previous) }
+                .buttonStyle(.bordered)
+            Button("下一个") { find(.next) }
+                .buttonStyle(.borderedProminent)
+            Text(findMessage)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            Spacer()
+            Button { isFindBarPresented = false } label: { Image(systemName: "xmark") }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .help("关闭查找")
+        }
+        .padding(.horizontal, 14)
+        .frame(height: 42)
+        .background(Color(red: 0.98, green: 0.99, blue: 0.98))
+        .overlay(alignment: .bottom) { Divider() }
+    }
+
+    private func find(_ direction: OfficeExcerptSearchDirection) {
+        findMessage = viewModel.searchExcerpt(for: findQuery, direction: direction) ? "已定位到匹配项" : "未找到匹配项"
+    }
+
     private var spreadsheet: some View {
         ScrollView([.horizontal, .vertical]) {
             LazyVStack(spacing: 0) {
@@ -255,7 +298,7 @@ private struct OfficeWorkspaceContent: View {
 
     private var statusBar: some View {
         HStack {
-            Text("Ready")
+            Text(actionStatus.isEmpty ? "Ready" : actionStatus)
             Spacer()
             Text("Selected: \(viewModel.selected.name)")
             Divider().frame(height: 14)
@@ -282,6 +325,34 @@ private struct OfficeWorkspaceContent: View {
     private func writeReadyMarkerIfRequested() {
         guard let path = ProcessInfo.processInfo.environment["GRIDNOTE_TEST_READY_MARKER"] else { return }
         FileManager.default.createFile(atPath: path, contents: Data("ready".utf8))
+    }
+}
+
+enum OfficeExcerptSearchDirection {
+    case previous
+    case next
+}
+
+enum OfficeExcerptSearch {
+    static func matchingBlockIndex(
+        in blocks: [TextBlock],
+        query: String,
+        currentIndex: Int,
+        direction: OfficeExcerptSearchDirection
+    ) -> Int? {
+        let query = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty, !blocks.isEmpty else { return nil }
+        let currentIndex = min(max(currentIndex, 0), blocks.count - 1)
+        let indices: [Int]
+        switch direction {
+        case .next:
+            indices = Array((currentIndex + 1)..<blocks.count) + Array(0...currentIndex)
+        case .previous:
+            indices = Array(stride(from: currentIndex - 1, through: 0, by: -1)) + Array(stride(from: blocks.count - 1, through: currentIndex, by: -1))
+        }
+        return indices.first {
+            blocks[$0].text.range(of: query, options: [.caseInsensitive, .diacriticInsensitive]) != nil
+        }
     }
 }
 
@@ -361,6 +432,32 @@ final class OfficeWorkspaceViewModel: ObservableObject {
         isExcerptConcealed = false
     }
 
+    @discardableResult
+    func searchExcerpt(for query: String, direction: OfficeExcerptSearchDirection) -> Bool {
+        guard let match = OfficeExcerptSearch.matchingBlockIndex(
+            in: excerptBlocks,
+            query: query,
+            currentIndex: excerpt.startBlockIndex,
+            direction: direction
+        ) else { return false }
+        revealExcerpt()
+        applyExcerpt(startingAt: match)
+        return true
+    }
+
+    @discardableResult
+    func toggleBookmark() -> Bool? {
+        guard let excerptBookID,
+              let locator = locator(forGlobalBlockIndex: excerpt.startBlockIndex),
+              let excerpt = excerpt.valuesByRow[1]
+        else { return nil }
+        return try? ReadingBookmarkRepository(context: context).toggle(
+            bookID: excerptBookID,
+            locator: locator,
+            excerpt: excerpt.replacingOccurrences(of: "\n", with: " ").prefix(72).description
+        )
+    }
+
     private func persist() {
         guard let record else { return }
         try? OfficeSheetRepository(context: context).save(snapshot: snapshot, selected: selected, sheetName: sheetName, to: record)
@@ -408,11 +505,15 @@ final class OfficeWorkspaceViewModel: ObservableObject {
         excerpt = ExcerptInjector.inject(blocks: excerptBlocks, startBlockIndex: index, rowCount: 1)
         objectWillChange.send()
         guard let excerptBookID,
-              let location = ExcerptPositionMapper.location(forGlobalBlockIndex: excerpt.startBlockIndex, chapters: excerptChapters) else { return }
-        let locator: ReadingLocator = excerptFormat == .epub
+              let locator = locator(forGlobalBlockIndex: excerpt.startBlockIndex) else { return }
+        _ = try? ReadingProgressRepository(context: context).save(locator: locator, for: excerptBookID)
+    }
+
+    private func locator(forGlobalBlockIndex index: Int) -> ReadingLocator? {
+        guard let location = ExcerptPositionMapper.location(forGlobalBlockIndex: index, chapters: excerptChapters) else { return nil }
+        return excerptFormat == .epub
             ? .epub(spineItemID: location.chapterID, blockIndex: location.blockIndex, intraBlockOffset: 0)
             : .text(chapterID: location.chapterID, blockIndex: location.blockIndex, intraBlockOffset: 0)
-        _ = try? ReadingProgressRepository(context: context).save(locator: locator, for: excerptBookID)
     }
 
     private func configureExcerptDocument(_ document: BookDocument) {

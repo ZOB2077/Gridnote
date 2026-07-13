@@ -27,8 +27,10 @@ final class ReadingBookmarkRepository {
 
     func toggle(bookID: UUID, locator: ReadingLocator, excerpt: String) throws -> Bool {
         let data = try encoder.encode(locator)
+        // SwiftData does not reliably predicate-match transformed Data fields on current macOS SDKs.
         let matches = try context.fetch(FetchDescriptor<ReadingBookmarkRecord>())
-            .filter { $0.bookID == bookID && $0.locatorData == data }
+            .filter { $0.bookID == bookID }
+            .filter { (try? decoder.decode(ReadingLocator.self, from: $0.locatorData)) == locator }
         if let existing = matches.first {
             context.delete(existing)
             try context.save()

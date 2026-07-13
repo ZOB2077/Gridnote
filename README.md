@@ -1,6 +1,6 @@
 # Gridnote Codex Starter Pack
 
-This package is the implementation baseline for `Gridnote`, a local-first macOS novel reader with an office-style spreadsheet disguise. It contains the product and architecture contract plus the initial Xcode project skeleton for Codex-driven implementation.
+This package is the implementation baseline for `Gridnote`, a source-available, local-first macOS novel reader with an office-style spreadsheet disguise. It contains the product and architecture contract plus the initial Xcode project skeleton for Codex-driven implementation.
 
 The package is deliberately narrow:
 
@@ -24,7 +24,7 @@ The package is deliberately narrow:
 - `KNOWN_LIMITATIONS.md`
 - `RELEASE_NOTES.md`
 - `THIRD_PARTY_NOTICES.md`
-- `LICENSE` (MIT)
+- `LICENSE` (source-available, non-commercial)
 - `Fixtures/`
 - `Scripts/generate_fixtures.py`
 
@@ -64,6 +64,18 @@ Final verification includes 33 passing unit tests and 9 macOS UI automation test
 - Do not add third-party dependencies in MVP without an explicit architecture decision.
 - Do not copy Microsoft trademarks, icons, or proprietary visual assets.
 - Do not build a fake "Excel clone". Build a credible original office-like shell with limited editing.
+
+## License And Commercial Use
+
+Gridnote is source-available under the `Gridnote Source-Available Non-Commercial
+License v1.0`. Personal, educational, research, and other non-commercial use is
+permitted subject to the license terms. It is not OSI open source.
+
+Commercial use, including paid distribution, paid services, OEM/white-label
+distribution, bundling, monetization, and commercial derivative products,
+requires a separate written agreement with the copyright holder. See
+[`LICENSE`](LICENSE) and contact [ZOB2077](https://github.com/ZOB2077) for
+commercial licensing.
 
 ## Definition Of Ready
 

@@ -1,21 +1,76 @@
-MIT License
+Gridnote Source-Available Non-Commercial License v1.0
 
-Copyright (c) 2026 ZOB2077
+Copyright (c) 2026 ZOB2077. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. Definitions
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+"Project" means the Gridnote source code, documentation, assets, and related
+materials in this repository. "Copyright Holder" means ZOB2077. "Commercial
+Use" means any use intended for or directed toward commercial advantage or
+monetary compensation, whether direct or indirect.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. Non-Commercial Grant
+
+Subject to this License, the Copyright Holder grants you a limited,
+non-exclusive, worldwide, royalty-free, non-transferable, and revocable
+license to view, copy, use, modify, and distribute the Project solely for
+personal, educational, research, charitable, or other non-commercial purposes.
+You must retain this License, all copyright notices, and all third-party notices
+in every copy or substantial portion of the Project.
+
+3. Commercial Use Requires Separate Permission
+
+You may not, without a separate written agreement signed by the Copyright
+Holder:
+
+- sell, license, sublicense, rent, lease, or otherwise monetize the Project or
+  a derivative work;
+- provide the Project or a derivative work as a hosted, managed, or on-demand
+  service;
+- bundle the Project or a derivative work with a paid product or service;
+- use the Project or a derivative work in advertising, sponsorship, lead
+  generation, or other revenue-generating activity; or
+- use the Project to develop, offer, or support a commercial product or service.
+
+Commercial licenses, including OEM, white-label, distribution, and hosted
+service licenses, may be available from the Copyright Holder. Contact the
+Copyright Holder through https://github.com/ZOB2077 to discuss commercial
+authorization.
+
+4. Contributions
+
+You retain ownership of your original contributions. By submitting a pull
+request, patch, or other contribution for inclusion in the Project, you grant
+the Copyright Holder a perpetual, worldwide, non-exclusive, irrevocable,
+royalty-free right to use, reproduce, modify, distribute, sublicense, and
+commercialize that contribution as part of, or in connection with, the Project.
+You represent that you have the right to grant this permission.
+
+5. Trademarks
+
+This License does not grant permission to use the Copyright Holder's names,
+logos, or trademarks, except as reasonably necessary to identify the origin of
+an unmodified copy of the Project.
+
+6. Third-Party Materials
+
+Third-party materials remain subject to their own notices and licenses. Nothing
+in this License limits rights granted by a third-party license.
+
+7. Termination
+
+This License terminates automatically if you breach any term. Upon termination,
+you must stop all use and distribution of the Project, except to the extent
+required by applicable law.
+
+8. Disclaimer and Limitation of Liability
+
+THE PROJECT IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. TO THE MAXIMUM EXTENT
+PERMITTED BY LAW, THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY CLAIM,
+DAMAGES, OR OTHER LIABILITY ARISING FROM OR RELATED TO THE PROJECT OR THIS
+LICENSE.
+
+This License is not an open source license. For commercial permission, a
+separate written agreement is required.
