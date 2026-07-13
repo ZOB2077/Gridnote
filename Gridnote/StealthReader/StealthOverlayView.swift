@@ -8,6 +8,7 @@ struct StealthOverlayView: View {
     @State private var showsBookmarks = false
     @State private var showsChapters = false
     @State private var isHovering = false
+    @State private var pageDragOffset: CGFloat = 0
     @State private var sliderValue = 0.0
     @State private var searchQuery = ""
 
@@ -40,15 +41,28 @@ struct StealthOverlayView: View {
                     .stroke(borderColor, lineWidth: 1)
             }
         }
+        .overlay(alignment: .topTrailing) {
+            if !controller.superStealthMode && (isHovering || showsSettings || showsSearch || showsBookmarks || showsChapters) {
+                hoverControls
+                    .padding(9)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
         .shadow(color: .black.opacity(controller.superStealthMode ? 0 : 0.18), radius: 18, y: 7)
         .onHover { isHovering = $0 }
+        .animation(.easeInOut(duration: 0.16), value: isHovering)
         .onChange(of: viewModel.progressFraction) { _, value in sliderValue = value }
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteStealthSearchRequested)) { _ in
             showsSearch = true
         }
         .gesture(
-            DragGesture(minimumDistance: 55)
+            DragGesture(minimumDistance: 10)
+                .onChanged { value in
+                    guard abs(value.translation.width) > abs(value.translation.height) else { return }
+                    pageDragOffset = min(max(value.translation.width * 0.3, -38), 38)
+                }
                 .onEnded { value in
+                    withAnimation(.easeOut(duration: 0.16)) { pageDragOffset = 0 }
                     if value.translation.width < -55 { viewModel.next() }
                     if value.translation.width > 55 { viewModel.previous() }
                 }
@@ -76,8 +90,6 @@ struct StealthOverlayView: View {
                 .padding(.vertical, 3)
                 .background(statusColor.opacity(0.12), in: Capsule())
                 .foregroundStyle(statusColor)
-            controls
-                .opacity(isHovering || showsSettings ? 1 : 0.16)
         }
         .padding(.horizontal, 13)
         .frame(height: 43)
@@ -96,19 +108,32 @@ struct StealthOverlayView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         default:
             GeometryReader { proxy in
-                Text(viewModel.pageText)
-                    .font(.system(size: viewModel.fontSize, weight: .regular, design: bodyDesign))
-                    .lineSpacing(viewModel.lineSpacing)
-                    .foregroundStyle(viewModel.textColor.opacity(viewModel.textOpacity))
-                    .textSelection(.enabled)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 13)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .clipped()
-                    .onAppear { viewModel.fitPage(to: proxy.size) }
-                    .onChange(of: proxy.size) { _, size in viewModel.fitPage(to: size) }
-                    .onChange(of: viewModel.fontSize) { _, _ in viewModel.fitPage(to: proxy.size) }
-                    .onChange(of: viewModel.lineSpacing) { _, _ in viewModel.fitPage(to: proxy.size) }
+                ZStack {
+                    Text(viewModel.pageText)
+                        .id(viewModel.pageRevision)
+                        .font(.system(size: viewModel.fontSize, weight: .regular, design: bodyDesign))
+                        .lineSpacing(viewModel.lineSpacing)
+                        .foregroundStyle(viewModel.textColor.opacity(viewModel.textOpacity))
+                        .textSelection(.enabled)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 13)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                        .offset(x: pageDragOffset)
+                        .transition(pageTransition)
+
+                    if abs(pageDragOffset) > 8 {
+                        Image(systemName: pageDragOffset < 0 ? "chevron.right.circle.fill" : "chevron.left.circle.fill")
+                            .font(.system(size: 22, weight: .medium))
+                            .foregroundStyle(statusColor.opacity(min(abs(pageDragOffset) / 38, 0.8)))
+                            .transition(.opacity)
+                    }
+                }
+                .clipped()
+                .animation(.snappy(duration: 0.22, extraBounce: 0.02), value: viewModel.pageRevision)
+                .onAppear { viewModel.fitPage(to: proxy.size) }
+                .onChange(of: proxy.size) { _, size in viewModel.fitPage(to: size) }
+                .onChange(of: viewModel.fontSize) { _, _ in viewModel.fitPage(to: proxy.size) }
+                .onChange(of: viewModel.lineSpacing) { _, _ in viewModel.fitPage(to: proxy.size) }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -144,8 +169,8 @@ struct StealthOverlayView: View {
         .background(footerColor)
     }
 
-    private var controls: some View {
-        HStack(spacing: 10) {
+    private var hoverControls: some View {
+        HStack(spacing: 9) {
             Button(action: viewModel.previous) { Image(systemName: "chevron.left") }
                 .disabled(!viewModel.canGoPrevious)
                 .help("Previous record")
@@ -170,7 +195,11 @@ struct StealthOverlayView: View {
                 .help("Close panel")
         }
         .buttonStyle(.plain)
-        .font(.system(size: 11, weight: .medium))
+        .font(.system(size: 10, weight: .semibold))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(.ultraThinMaterial, in: Capsule())
+        .overlay(Capsule().stroke(borderColor.opacity(0.7), lineWidth: 0.5))
     }
 
     private var settings: some View {
@@ -178,6 +207,15 @@ struct StealthOverlayView: View {
             Text("Workspace View").font(.headline)
             Picker("Appearance", selection: $viewModel.appearance) {
                 ForEach(StealthAppearance.allCases) { Text(verbatim: $0.title).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            Picker("Reading density", selection: Binding(
+                get: { viewModel.density },
+                set: { viewModel.applyDensity($0) }
+            )) {
+                ForEach(FloatingReaderDensity.allCases) { density in
+                    Text(verbatim: density.title).tag(density)
+                }
             }
             .pickerStyle(.segmented)
             settingSlider("Font size", value: $viewModel.fontSize, range: 10...28, format: "%.0f pt")
@@ -288,6 +326,15 @@ struct StealthOverlayView: View {
     private var foregroundColor: Color { viewModel.appearance == .console ? Color(red: 0.78, green: 0.90, blue: 0.80) : .primary }
     private var borderColor: Color { viewModel.appearance == .console ? .green.opacity(0.25) : .primary.opacity(0.13) }
     private var footerColor: Color { viewModel.appearance == .console ? .black.opacity(0.26) : .primary.opacity(0.035) }
+
+    private var pageTransition: AnyTransition {
+        let insertion: Edge = viewModel.pageDirection == .forward ? .trailing : .leading
+        let removal: Edge = viewModel.pageDirection == .forward ? .leading : .trailing
+        return .asymmetric(
+            insertion: .move(edge: insertion).combined(with: .opacity),
+            removal: .move(edge: removal).combined(with: .opacity)
+        )
+    }
 
     @ViewBuilder
     private var background: some View {

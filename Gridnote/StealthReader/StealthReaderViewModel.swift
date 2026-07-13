@@ -18,6 +18,43 @@ enum StealthAppearance: String, CaseIterable, Identifiable {
     }
 }
 
+enum FloatingReaderDensity: String, CaseIterable, Hashable, Identifiable {
+    case spacious
+    case balanced
+    case compact
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .spacious: String(localized: "Spacious")
+        case .balanced: String(localized: "Balanced")
+        case .compact: String(localized: "Compact")
+        }
+    }
+
+    var fontSize: Double {
+        switch self {
+        case .spacious: 17
+        case .balanced: 14
+        case .compact: 12
+        }
+    }
+
+    var lineSpacing: Double {
+        switch self {
+        case .spacious: 8
+        case .balanced: 4
+        case .compact: 1
+        }
+    }
+}
+
+enum FloatingReaderPageDirection: Equatable {
+    case forward
+    case backward
+}
+
 struct FloatingReaderChapter: Identifiable, Equatable, Sendable {
     let id: String
     let title: String
@@ -41,6 +78,8 @@ final class StealthReaderViewModel: ObservableObject {
     @Published private(set) var chapters: [FloatingReaderChapter] = []
     @Published private(set) var isCurrentLocationBookmarked = false
     @Published private(set) var searchResultText = ""
+    @Published private(set) var pageRevision = 0
+    @Published private(set) var pageDirection: FloatingReaderPageDirection = .forward
     @Published var charactersPerPage: Int {
         didSet {
             defaults.set(charactersPerPage, forKey: Keys.charactersPerPage)
@@ -71,6 +110,7 @@ final class StealthReaderViewModel: ObservableObject {
     @Published var appearance: StealthAppearance {
         didSet { defaults.set(appearance.rawValue, forKey: Keys.appearance) }
     }
+    @Published private(set) var density: FloatingReaderDensity
 
     private struct LoadRequest: Sendable {
         let id: UUID
@@ -99,6 +139,7 @@ final class StealthReaderViewModel: ObservableObject {
         static let lineSpacing = "stealthReader.lineSpacing"
         static let backgroundOpacity = "stealthReader.backgroundOpacity"
         static let appearance = "stealthReader.appearance"
+        static let density = "stealthReader.density"
     }
 
     private let context: ModelContext
@@ -125,6 +166,7 @@ final class StealthReaderViewModel: ObservableObject {
         textColor = ReaderPresentationSettings.textColor(in: self.presentationDefaults)
         textOpacity = ReaderPresentationSettings.textOpacity(in: self.presentationDefaults)
         appearance = StealthAppearance(rawValue: defaults.string(forKey: Keys.appearance) ?? "") ?? .activity
+        density = FloatingReaderDensity(rawValue: defaults.string(forKey: Keys.density) ?? "") ?? .balanced
     }
 
     var canGoPrevious: Bool { offset > 0 }
@@ -201,22 +243,23 @@ final class StealthReaderViewModel: ObservableObject {
     func next() {
         guard canGoNext else { return }
         offset = min(offset + charactersPerPage, max(fullText.length - 1, 0))
-        refreshPage()
+        refreshPage(animated: true, direction: .forward)
         saveProgress()
     }
 
     func previous() {
         guard canGoPrevious else { return }
         offset = max(offset - charactersPerPage, 0)
-        refreshPage()
+        refreshPage(animated: true, direction: .backward)
         saveProgress()
     }
 
     func seek(to fraction: Double) {
         guard fullText.length > 0 else { return }
         let rawOffset = Int(Double(max(fullText.length - 1, 0)) * min(max(fraction, 0), 1))
+        let direction: FloatingReaderPageDirection = rawOffset >= offset ? .forward : .backward
         offset = rawOffset - rawOffset % charactersPerPage
-        refreshPage()
+        refreshPage(animated: true, direction: direction)
         saveProgress()
     }
 
@@ -236,14 +279,15 @@ final class StealthReaderViewModel: ObservableObject {
 
     func goToStart() {
         offset = 0
-        refreshPage()
+        refreshPage(animated: true, direction: .backward)
         saveProgress()
     }
 
     func jump(to chapter: FloatingReaderChapter) {
         guard fullText.length > 0 else { return }
+        let direction: FloatingReaderPageDirection = chapter.offset >= offset ? .forward : .backward
         offset = min(max(chapter.offset, 0), fullText.length - 1)
-        refreshPage()
+        refreshPage(animated: true, direction: direction)
         saveProgress()
     }
 
@@ -255,8 +299,9 @@ final class StealthReaderViewModel: ObservableObject {
     }
 
     func jump(to bookmark: ReadingBookmark) {
+        let originalOffset = offset
         restore(bookmark.locator)
-        refreshPage()
+        refreshPage(animated: true, direction: offset >= originalOffset ? .forward : .backward)
         saveProgress()
     }
 
@@ -280,10 +325,18 @@ final class StealthReaderViewModel: ObservableObject {
             searchResultText = String(localized: "No matches")
             return
         }
+        let direction: FloatingReaderPageDirection = found.location >= offset ? .forward : .backward
         offset = found.location
-        refreshPage()
+        refreshPage(animated: true, direction: direction)
         saveProgress()
         searchResultText = String(localized: "Match found")
+    }
+
+    func applyDensity(_ density: FloatingReaderDensity) {
+        self.density = density
+        defaults.set(density.rawValue, forKey: Keys.density)
+        fontSize = density.fontSize
+        lineSpacing = density.lineSpacing
     }
 
     nonisolated private static func prepare(document: BookDocument, format: BookFormat) -> PreparedDocument {
@@ -324,7 +377,7 @@ final class StealthReaderViewModel: ObservableObject {
         offset = min(span.range.lowerBound + utf16Offset, max(fullText.length - 1, 0))
     }
 
-    private func refreshPage() {
+    private func refreshPage(animated: Bool = false, direction: FloatingReaderPageDirection = .forward) {
         guard fullText.length > 0 else {
             if state == .ready { pageText = String(localized: "This record has no readable notes.") }
             progressText = String(localized: "Empty")
@@ -340,6 +393,10 @@ final class StealthReaderViewModel: ObservableObject {
         progressText = String(format: String(localized: "Record %lld of %lld"), currentPage, pageCount)
         progressFraction = pageCount == 1 ? 1 : Double(currentPage - 1) / Double(pageCount - 1)
         isCurrentLocationBookmarked = bookmarks.contains { $0.locator == currentLocator }
+        if animated {
+            pageDirection = direction
+            pageRevision &+= 1
+        }
     }
 
     private func saveProgress() {

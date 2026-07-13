@@ -32,6 +32,8 @@ final class StealthReaderViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.canGoNext)
 
         viewModel.next()
+        XCTAssertEqual(viewModel.pageRevision, 1)
+        XCTAssertEqual(viewModel.pageDirection, .forward)
         XCTAssertEqual(viewModel.progressText, String(format: String(localized: "Record %lld of %lld"), 2, 3))
         let locator = try XCTUnwrap(ReadingProgressRepository(context: context).fetchLocator(bookID: book.id))
         guard case let .text(_, blockIndex, intraBlockOffset) = locator else {
@@ -116,6 +118,22 @@ final class StealthReaderViewModelTests: XCTestCase {
         FloatingReaderFocusShieldSettings.save(delay: 99, usesFade: false, to: defaults)
         XCTAssertEqual(FloatingReaderFocusShieldSettings.delay(in: defaults), FloatingReaderFocusShieldSettings.delayRange.upperBound)
         XCTAssertFalse(FloatingReaderFocusShieldSettings.usesFade(in: defaults))
+    }
+
+    func testDensityPresetUpdatesReaderMetricsAndPersists() throws {
+        let suiteName = "gridnote-density-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let container = try GridnoteModelContainer.make(inMemory: true)
+        let viewModel = StealthReaderViewModel(context: ModelContext(container), defaults: defaults)
+
+        viewModel.applyDensity(.spacious)
+
+        XCTAssertEqual(viewModel.density, .spacious)
+        XCTAssertEqual(viewModel.fontSize, FloatingReaderDensity.spacious.fontSize)
+        XCTAssertEqual(viewModel.lineSpacing, FloatingReaderDensity.spacious.lineSpacing)
+        let restored = StealthReaderViewModel(context: ModelContext(container), defaults: defaults)
+        XCTAssertEqual(restored.density, .spacious)
     }
 
     func testShortcutRoutingUsesOfficeFormulaBarWhenFloatingReaderIsHidden() {
