@@ -1,0 +1,3 @@
+Gridnote offline fixture
+
+This text is safe for parser and reading tests.

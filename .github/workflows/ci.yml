@@ -1,0 +1,36 @@
+name: macOS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  unit-tests:
+    name: Build and unit test
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Reject tracked business datasets
+        run: Scripts/check_repository_hygiene.sh
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Build release configuration
+        run: >-
+          xcodebuild -project Gridnote.xcodeproj -scheme Gridnote
+          -configuration Release -destination 'platform=macOS'
+          CODE_SIGNING_ALLOWED=NO build
+      - name: Build and run unit tests
+        run: >-
+          xcodebuild -project Gridnote.xcodeproj -scheme Gridnote
+          -destination 'platform=macOS'
+          -parallel-testing-enabled NO
+          -skip-testing:GridnoteUITests
+          -skip-testing:GridnoteTests/ReleaseFixtureTests/testLargeTXTParserPerformanceSmoke
+          test

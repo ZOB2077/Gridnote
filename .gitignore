@@ -1,0 +1,32 @@
+.DS_Store
+build/
+DerivedData/
+xcuserdata/
+*.xcuserstate
+
+# Xcode and Swift Package Manager local state
+.build/
+*.xcscmblueprint
+*.moved-aside
+*.swp
+*.swo
+
+# Local configuration, release artifacts, and generated design scratch files
+.env
+.env.*
+*.dmg
+*.zip
+tmp/
+
+# Production exports and local business datasets must never enter source control.
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+*.tsv
+*.numbers
+*.sqlite
+*.sqlite3
+*.db
+*.parquet
+*.feather
