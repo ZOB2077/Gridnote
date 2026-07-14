@@ -130,7 +130,7 @@
     "Next page" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "下一页" } } } },
     "Show / hide" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "显示 / 隐藏" } } } },
     "Super Stealth Controls" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "超级隐蔽控制" } } } },
-    "Super Stealth display width" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "超级隐蔽显示宽度" } } } },
+    "Super Stealth minimum width" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "超级隐蔽最小宽度" } } } },
     "Super Stealth display height" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "超级隐蔽显示高度" } } } },
     "Text-only floating reader is active" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "纯文字悬浮阅读已开启" } } } },
     "Show / Hide  %@" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "显示 / 隐藏  %1$@" } } } },

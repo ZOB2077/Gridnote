@@ -2,6 +2,15 @@
 
 All notable changes are documented in this file. Gridnote follows [Semantic Versioning](https://semver.org/) for public releases where practical.
 
+## [0.1.2] - 2026-07-14
+
+### Changed
+
+- Added adaptive Super Stealth width between the configured minimum and the current screen's safe maximum.
+- Replaced estimated one-line capacity with glyph-measured pagination that prefers punctuation and paragraph boundaries.
+- Added a six-character context overlap between consecutive Super Stealth pages.
+- Removed visible swipe displacement, direction arrows, and sliding page transitions; Super Stealth now switches instantly and the normal panel uses only an 80 ms fade.
+
 ## [0.1.1] - 2026-07-14
 
 ### Security
@@ -40,3 +49,4 @@ All notable changes are documented in this file. Gridnote follows [Semantic Vers
 
 [0.1.0]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.0
 [0.1.1]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.1
+[0.1.2]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.2

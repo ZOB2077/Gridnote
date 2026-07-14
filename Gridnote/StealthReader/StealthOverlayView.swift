@@ -8,7 +8,6 @@ struct StealthOverlayView: View {
     @State private var showsBookmarks = false
     @State private var showsChapters = false
     @State private var isHovering = false
-    @State private var pageDragOffset: CGFloat = 0
     @State private var sliderValue = 0.0
     @State private var searchQuery = ""
 
@@ -57,12 +56,7 @@ struct StealthOverlayView: View {
         }
         .gesture(
             DragGesture(minimumDistance: 10)
-                .onChanged { value in
-                    guard abs(value.translation.width) > abs(value.translation.height) else { return }
-                    pageDragOffset = min(max(value.translation.width * 0.3, -38), 38)
-                }
                 .onEnded { value in
-                    withAnimation(.easeOut(duration: 0.16)) { pageDragOffset = 0 }
                     if value.translation.width < -55 { viewModel.next() }
                     if value.translation.width > 55 { viewModel.previous() }
                 }
@@ -119,22 +113,16 @@ struct StealthOverlayView: View {
                         .padding(.horizontal, 16)
                         .padding(.vertical, controller.superStealthMode ? 4 : 13)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                        .offset(x: pageDragOffset)
                         .transition(pageTransition)
-
-                    if abs(pageDragOffset) > 8 {
-                        Image(systemName: pageDragOffset < 0 ? "chevron.right.circle.fill" : "chevron.left.circle.fill")
-                            .font(.system(size: 22, weight: .medium))
-                            .foregroundStyle(statusColor.opacity(min(abs(pageDragOffset) / 38, 0.8)))
-                            .transition(.opacity)
-                    }
                 }
                 .clipped()
-                .animation(.snappy(duration: 0.22, extraBounce: 0.02), value: viewModel.pageRevision)
+                .animation(controller.superStealthMode ? nil : .easeOut(duration: 0.08), value: viewModel.pageRevision)
                 .onAppear { fitPage(to: proxy.size) }
                 .onChange(of: proxy.size) { _, size in fitPage(to: size) }
                 .onChange(of: viewModel.fontSize) { _, _ in fitPage(to: proxy.size) }
                 .onChange(of: viewModel.lineSpacing) { _, _ in fitPage(to: proxy.size) }
+                .onChange(of: viewModel.appearance) { _, _ in fitPage(to: proxy.size) }
+                .onChange(of: viewModel.pageRevision) { _, _ in fitPage(to: proxy.size) }
                 .onChange(of: controller.superStealthMode) { _, _ in fitPage(to: proxy.size) }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -330,23 +318,19 @@ struct StealthOverlayView: View {
     private var footerColor: Color { viewModel.appearance == .console ? .black.opacity(0.26) : .primary.opacity(0.035) }
 
     private var pageTransition: AnyTransition {
-        let insertion: Edge = viewModel.pageDirection == .forward ? .trailing : .leading
-        let removal: Edge = viewModel.pageDirection == .forward ? .leading : .trailing
-        return .asymmetric(
-            insertion: .move(edge: insertion).combined(with: .opacity),
-            removal: .move(edge: removal).combined(with: .opacity)
-        )
+        controller.superStealthMode ? .identity : .opacity
     }
 
     private func fitPage(to size: CGSize) {
         if controller.superStealthMode {
-            controller.adjustSuperStealthWidth(
-                for: viewModel.pageText,
-                fontSize: viewModel.fontSize,
-                pageHasMoreContent: viewModel.canGoNext
+            viewModel.fitSingleLinePage(
+                maximumTextWidth: controller.maximumSuperStealthTextWidth,
+                monospaced: viewModel.appearance == .console
             )
+            controller.adjustSuperStealthWidth(for: viewModel.currentPageMeasuredWidth)
+        } else {
+            viewModel.fitPage(to: size)
         }
-        viewModel.fitPage(to: size, maximumLines: controller.superStealthMode ? 1 : nil)
     }
 
     private var displayedPageText: String {

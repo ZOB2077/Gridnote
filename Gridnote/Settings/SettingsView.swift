@@ -42,7 +42,7 @@ private struct SettingsContent: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 if stealthController.superStealthMode {
-                    superStealthSizeSlider("Super Stealth display width", value: Binding(
+                    superStealthSizeSlider("Super Stealth minimum width", value: Binding(
                         get: { Double(stealthController.superStealthDisplaySize.width) },
                         set: { stealthController.setSuperStealthDisplaySize(width: CGFloat($0), height: stealthController.superStealthDisplaySize.height) }
                     ), range: SuperStealthDisplaySize.widthRange)

@@ -1,4 +1,4 @@
-# Gridnote v0.1.1 Release Notes
+# Gridnote v0.1.2 Release Notes
 
 ## Included
 
@@ -13,6 +13,8 @@
 - Reader font size, line spacing, and system/paper/dark themes.
 - Menu bar controls, a freely movable floating reader without edge snapping, and Super Stealth mode.
 - CJK-safe one-line pagination that expands the text range without adding tail ellipses.
+- Pixel-measured Super Stealth pages with adaptive width, semantic punctuation boundaries, and six-character context overlap.
+- Instant Super Stealth page changes and a subtle 80 ms fade in the normal floating panel, with no sliding text or direction arrows.
 - Bidirectional progress synchronization between office formula-bar navigation and the floating reader.
 - Default `F7` previous, `F8` next, and `F9` show/hide shortcuts.
 - Dense phone-rental disguise tables built from deduplicated public model names and fully synthetic order, device, specification, logistics, status, and amount fields.

@@ -1,3 +1,4 @@
+import AppKit
 import SwiftData
 import XCTest
 @testable import Gridnote
@@ -107,6 +108,36 @@ final class StealthReaderViewModelTests: XCTestCase {
             Double(viewModel.charactersPerPage) * viewModel.fontSize * 1.08,
             620 - 32
         )
+    }
+
+    func testPixelPaginatorFitsMeasuredWidthAndUsesSemanticBoundary() {
+        let text = NSString(string: "这是第一句话，用来验证像素分页。这里是第二句话，应当进入下一页继续显示。")
+        let font = NSFont.systemFont(ofSize: 14)
+        let boundaryWidth = NSAttributedString(
+            string: "这是第一句话，用来验证像素分页。这里是第二句",
+            attributes: [.font: font]
+        ).size().width
+
+        let layout = FloatingReaderPaginator.singleLineLayout(
+            text: text,
+            start: 0,
+            maximumWidth: boundaryWidth,
+            font: font
+        )
+
+        XCTAssertTrue(text.substring(with: layout.range).hasSuffix("。"))
+        XCTAssertLessThanOrEqual(layout.measuredWidth, ceil(boundaryWidth))
+    }
+
+    func testPixelPaginatorCarriesSixCharactersIntoNextPage() throws {
+        let text = NSString(string: String(repeating: "甲乙丙丁戊己庚辛壬癸", count: 8))
+        let font = NSFont.monospacedSystemFont(ofSize: 14, weight: .regular)
+        let first = FloatingReaderPaginator.singleLineLayout(text: text, start: 0, maximumWidth: 240, font: font)
+        let nextOffset = try XCTUnwrap(first.nextOffset)
+        let overlapRange = NSRange(location: nextOffset, length: first.range.location + first.range.length - nextOffset)
+
+        XCTAssertEqual(text.substring(with: overlapRange).count, FloatingReaderPaginator.contextOverlap)
+        XCTAssertGreaterThan(nextOffset, first.range.location)
     }
 
     func testReloadPresentationSettingsUsesPersistedReaderAppearance() throws {

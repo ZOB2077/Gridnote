@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import SwiftData
 import SwiftUI
@@ -59,6 +60,73 @@ struct FloatingReaderChapter: Identifiable, Equatable, Sendable {
     let id: String
     let title: String
     let offset: Int
+}
+
+struct FloatingReaderPageLayout: Equatable {
+    let range: NSRange
+    let measuredWidth: CGFloat
+    let nextOffset: Int?
+}
+
+enum FloatingReaderPaginator {
+    static let contextOverlap = 6
+    private static let semanticBreaks = CharacterSet(charactersIn: "。！？!?；;，,\n\r")
+
+    static func singleLineLayout(text: NSString, start: Int, maximumWidth: CGFloat, font: NSFont) -> FloatingReaderPageLayout {
+        guard text.length > 0 else { return .init(range: NSRange(location: 0, length: 0), measuredWidth: 0, nextOffset: nil) }
+        let safeStart = min(max(start, 0), text.length - 1)
+        let remaining = text.length - safeStart
+        var low = 1
+        var high = remaining
+        var fittedLength = 1
+
+        while low <= high {
+            let middle = (low + high) / 2
+            let candidate = text.rangeOfComposedCharacterSequences(for: NSRange(location: safeStart, length: middle))
+            if measuredWidth(of: text, range: candidate, font: font) <= maximumWidth {
+                fittedLength = candidate.length
+                low = middle + 1
+            } else {
+                high = middle - 1
+            }
+        }
+
+        var range = text.rangeOfComposedCharacterSequences(for: NSRange(location: safeStart, length: fittedLength))
+        if range.location + range.length < text.length, let semanticLength = semanticLength(in: text, range: range) {
+            range.length = semanticLength
+        }
+        let width = measuredWidth(of: text, range: range, font: font)
+        let end = range.location + range.length
+        let nextOffset = end < text.length ? composedOffset(before: end, count: contextOverlap, in: text, floor: range.location + 1) : nil
+        return .init(range: range, measuredWidth: width, nextOffset: nextOffset)
+    }
+
+    private static func semanticLength(in text: NSString, range: NSRange) -> Int? {
+        let minimumLength = max(8, Int(Double(range.length) * 0.62))
+        guard range.length > minimumLength else { return nil }
+        for index in stride(from: range.location + range.length - 1, through: range.location + minimumLength - 1, by: -1) {
+            let scalar = UnicodeScalar(text.character(at: index))
+            if scalar.map(semanticBreaks.contains) == true { return index - range.location + 1 }
+        }
+        return nil
+    }
+
+    private static func measuredWidth(of text: NSString, range: NSRange, font: NSFont) -> CGFloat {
+        let display = text.substring(with: range)
+            .replacingOccurrences(of: "\r\n", with: " ")
+            .replacingOccurrences(of: "\n", with: " ")
+            .replacingOccurrences(of: "\r", with: " ")
+        return ceil(NSAttributedString(string: display, attributes: [.font: font]).size().width)
+    }
+
+    private static func composedOffset(before end: Int, count: Int, in text: NSString, floor: Int) -> Int {
+        var position = end
+        for _ in 0..<count where position > floor {
+            let sequence = text.rangeOfComposedCharacterSequence(at: position - 1)
+            position = max(sequence.location, floor)
+        }
+        return position
+    }
 }
 
 @MainActor
@@ -148,6 +216,10 @@ final class StealthReaderViewModel: ObservableObject {
     private var fullText: NSString = ""
     private var spans: [BlockSpan] = []
     private var offset = 0
+    private var nextPageOffset: Int?
+    private var previousPageOffsets: [Int] = []
+    private var singleLineMaximumWidth: CGFloat?
+    private var singleLineFont: NSFont?
     private var bookID: UUID?
     private var isReloadingPresentation = false
 
@@ -170,7 +242,20 @@ final class StealthReaderViewModel: ObservableObject {
     }
 
     var canGoPrevious: Bool { offset > 0 }
-    var canGoNext: Bool { offset + charactersPerPage < fullText.length }
+    var canGoNext: Bool {
+        singleLineMaximumWidth == nil
+            ? offset + charactersPerPage < fullText.length
+            : nextPageOffset != nil
+    }
+    var currentPageMeasuredWidth: CGFloat {
+        guard let font = singleLineFont else { return 0 }
+        return FloatingReaderPaginator.singleLineLayout(
+            text: fullText,
+            start: offset,
+            maximumWidth: singleLineMaximumWidth ?? .greatestFiniteMagnitude,
+            font: font
+        ).measuredWidth
+    }
 
     func reloadPresentationSettings() {
         isReloadingPresentation = true
@@ -242,14 +327,15 @@ final class StealthReaderViewModel: ObservableObject {
 
     func next() {
         guard canGoNext else { return }
-        offset = min(offset + charactersPerPage, max(fullText.length - 1, 0))
+        previousPageOffsets.append(offset)
+        offset = nextPageOffset ?? min(offset + charactersPerPage, max(fullText.length - 1, 0))
         refreshPage(animated: true, direction: .forward)
         saveProgress()
     }
 
     func previous() {
         guard canGoPrevious else { return }
-        offset = max(offset - charactersPerPage, 0)
+        offset = previousPageOffsets.popLast() ?? max(offset - charactersPerPage, 0)
         refreshPage(animated: true, direction: .backward)
         saveProgress()
     }
@@ -259,12 +345,17 @@ final class StealthReaderViewModel: ObservableObject {
         let rawOffset = Int(Double(max(fullText.length - 1, 0)) * min(max(fraction, 0), 1))
         let direction: FloatingReaderPageDirection = rawOffset >= offset ? .forward : .backward
         offset = rawOffset - rawOffset % charactersPerPage
+        previousPageOffsets.removeAll()
         refreshPage(animated: true, direction: direction)
         saveProgress()
     }
 
     /// Keeps each page inside the current floating panel instead of relying on vertical scrolling.
     func fitPage(to size: CGSize, maximumLines: Int? = nil) {
+        if maximumLines == nil {
+            singleLineMaximumWidth = nil
+            singleLineFont = nil
+        }
         let usableWidth = max(size.width - 32, 120)
         let usableHeight = max(size.height - (maximumLines == nil ? 26 : 8), 16)
         // CJK glyphs are approximately one em wide. Using a narrower average here
@@ -283,8 +374,21 @@ final class StealthReaderViewModel: ObservableObject {
         charactersPerPage = fittedCapacity
     }
 
+    func fitSingleLinePage(maximumTextWidth: CGFloat, monospaced: Bool) {
+        let width = max(maximumTextWidth, 120)
+        let font: NSFont = monospaced
+            ? .monospacedSystemFont(ofSize: fontSize, weight: .regular)
+            : .systemFont(ofSize: fontSize, weight: .regular)
+        guard singleLineMaximumWidth != width || singleLineFont != font else { return }
+        singleLineMaximumWidth = width
+        singleLineFont = font
+        previousPageOffsets.removeAll()
+        refreshPage()
+    }
+
     func goToStart() {
         offset = 0
+        previousPageOffsets.removeAll()
         refreshPage(animated: true, direction: .backward)
         saveProgress()
     }
@@ -293,6 +397,7 @@ final class StealthReaderViewModel: ObservableObject {
         guard fullText.length > 0 else { return }
         let direction: FloatingReaderPageDirection = chapter.offset >= offset ? .forward : .backward
         offset = min(max(chapter.offset, 0), fullText.length - 1)
+        previousPageOffsets.removeAll()
         refreshPage(animated: true, direction: direction)
         saveProgress()
     }
@@ -333,6 +438,7 @@ final class StealthReaderViewModel: ObservableObject {
         }
         let direction: FloatingReaderPageDirection = found.location >= offset ? .forward : .backward
         offset = found.location
+        previousPageOffsets.removeAll()
         refreshPage(animated: true, direction: direction)
         saveProgress()
         searchResultText = String(localized: "Match found")
@@ -401,11 +507,22 @@ final class StealthReaderViewModel: ObservableObject {
             return
         }
         offset = min(max(offset, 0), fullText.length - 1)
-        let proposed = NSRange(location: offset, length: min(charactersPerPage, fullText.length - offset))
-        let safeRange = fullText.rangeOfComposedCharacterSequences(for: proposed)
+        let safeRange: NSRange
+        if let width = singleLineMaximumWidth, let font = singleLineFont {
+            let layout = FloatingReaderPaginator.singleLineLayout(text: fullText, start: offset, maximumWidth: width, font: font)
+            safeRange = layout.range
+            nextPageOffset = layout.nextOffset
+        } else {
+            let proposed = NSRange(location: offset, length: min(charactersPerPage, fullText.length - offset))
+            safeRange = fullText.rangeOfComposedCharacterSequences(for: proposed)
+            nextPageOffset = safeRange.location + safeRange.length < fullText.length
+                ? safeRange.location + safeRange.length
+                : nil
+        }
         pageText = fullText.substring(with: safeRange)
-        let pageCount = max(1, Int(ceil(Double(fullText.length) / Double(charactersPerPage))))
-        let currentPage = min(pageCount, offset / charactersPerPage + 1)
+        let effectivePageLength = max(safeRange.length - (singleLineMaximumWidth == nil ? 0 : FloatingReaderPaginator.contextOverlap), 1)
+        let pageCount = max(1, Int(ceil(Double(fullText.length) / Double(effectivePageLength))))
+        let currentPage = min(pageCount, offset / effectivePageLength + 1)
         progressText = String(format: String(localized: "Record %lld of %lld"), currentPage, pageCount)
         progressFraction = pageCount == 1 ? 1 : Double(currentPage - 1) / Double(pageCount - 1)
         isCurrentLocationBookmarked = bookmarks.contains { $0.locator == currentLocator }
