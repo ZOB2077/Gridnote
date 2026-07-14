@@ -105,7 +105,8 @@ struct StealthOverlayView: View {
                 ZStack {
                     Text(displayedPageText)
                         .id(viewModel.pageRevision)
-                        .font(.system(size: viewModel.fontSize, weight: .regular, design: bodyDesign))
+                        .font(.system(size: viewModel.fontSize, weight: viewModel.fontWeight.swiftUIWeight, design: viewModel.fontFamily.design))
+                        .tracking(viewModel.letterSpacing)
                         .lineSpacing(viewModel.lineSpacing)
                         .foregroundStyle(viewModel.textColor.opacity(viewModel.textOpacity))
                         .lineLimit(controller.superStealthMode ? 1 : nil)
@@ -121,6 +122,9 @@ struct StealthOverlayView: View {
                 .onChange(of: proxy.size) { _, size in fitPage(to: size) }
                 .onChange(of: viewModel.fontSize) { _, _ in fitPage(to: proxy.size) }
                 .onChange(of: viewModel.lineSpacing) { _, _ in fitPage(to: proxy.size) }
+                .onChange(of: viewModel.letterSpacing) { _, _ in fitPage(to: proxy.size) }
+                .onChange(of: viewModel.fontFamily) { _, _ in fitPage(to: proxy.size) }
+                .onChange(of: viewModel.fontWeight) { _, _ in fitPage(to: proxy.size) }
                 .onChange(of: viewModel.appearance) { _, _ in fitPage(to: proxy.size) }
                 .onChange(of: viewModel.pageRevision) { _, _ in fitPage(to: proxy.size) }
                 .onChange(of: controller.superStealthMode) { _, _ in fitPage(to: proxy.size) }
@@ -131,10 +135,13 @@ struct StealthOverlayView: View {
 
     private var footer: some View {
         HStack(spacing: 10) {
-            Text(viewModel.progressText)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(viewModel.progressText)
+                Text(viewModel.progressDetailText).foregroundStyle(.tertiary)
+            }
                 .font(.system(size: 9, design: .monospaced))
                 .foregroundStyle(.secondary)
-                .frame(width: 125, alignment: .leading)
+                .frame(width: 165, alignment: .leading)
             Slider(
                 value: Binding(
                     get: { sliderValue },
@@ -160,41 +167,52 @@ struct StealthOverlayView: View {
     }
 
     private var hoverControls: some View {
-        HStack(spacing: 9) {
-            Button(action: viewModel.previous) { Image(systemName: "chevron.left") }
+        HStack(spacing: 4) {
+            controlButton("chevron.backward", action: viewModel.previous)
                 .disabled(!viewModel.canGoPrevious)
                 .help("Previous record")
-            Button(action: viewModel.next) { Image(systemName: "chevron.right") }
+            controlButton("chevron.forward", action: viewModel.next)
                 .disabled(!viewModel.canGoNext)
                 .help("Next record")
-            Button { showsSearch.toggle() } label: { Image(systemName: "magnifyingglass") }
+            controlButton("magnifyingglass") { showsSearch.toggle() }
                 .help("Search")
-            Button(action: viewModel.toggleBookmark) {
-                Image(systemName: viewModel.isCurrentLocationBookmarked ? "bookmark.fill" : "bookmark")
-            }
+            controlButton(viewModel.isCurrentLocationBookmarked ? "bookmark.fill" : "bookmark", action: viewModel.toggleBookmark)
             .help("Toggle bookmark")
-            Button { showsBookmarks.toggle() } label: { Image(systemName: "bookmark.square") }
+            controlButton("bookmark.square.fill") { showsBookmarks.toggle() }
                 .popover(isPresented: $showsBookmarks) { bookmarkList }
-            Button { showsChapters.toggle() } label: { Image(systemName: "list.bullet") }
+            controlButton("list.bullet.rectangle") { showsChapters.toggle() }
                 .disabled(viewModel.chapters.isEmpty)
                 .help("Chapters")
                 .popover(isPresented: $showsChapters) { chapterList }
-            Button { showsSettings.toggle() } label: { Image(systemName: "ellipsis.circle") }
+            Divider().frame(height: 18).padding(.horizontal, 2)
+            controlButton("slider.horizontal.3") { showsSettings.toggle() }
                 .popover(isPresented: $showsSettings) { settings }
-            Button(action: controller.hide) { Image(systemName: "xmark") }
+            controlButton("xmark", action: controller.hide)
                 .help("Close panel")
         }
         .buttonStyle(.plain)
-        .font(.system(size: 10, weight: .semibold))
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
-        .background(.ultraThinMaterial, in: Capsule())
-        .overlay(Capsule().stroke(borderColor.opacity(0.7), lineWidth: 0.5))
+        .padding(5)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).stroke(borderColor.opacity(0.65), lineWidth: 0.5))
+        .shadow(color: .black.opacity(0.12), radius: 10, y: 4)
+    }
+
+    private func controlButton(_ systemImage: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 11, weight: .semibold))
+                .frame(width: 27, height: 25)
+                .contentShape(Rectangle())
+        }
+        .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
     }
 
     private var settings: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            Text("Workspace View").font(.headline)
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("阅读外观").font(.headline)
+                Text("调整会立即应用并保存在本机").font(.caption).foregroundStyle(.secondary)
+            }
             Picker("Appearance", selection: $viewModel.appearance) {
                 ForEach(StealthAppearance.allCases) { Text(verbatim: $0.title).tag($0) }
             }
@@ -208,8 +226,25 @@ struct StealthOverlayView: View {
                 }
             }
             .pickerStyle(.segmented)
+            Divider()
+            LabeledContent("字体风格") {
+                Picker("字体风格", selection: $viewModel.fontFamily) {
+                    ForEach(ReaderFontFamily.allCases) { Text($0.title).tag($0) }
+                }
+                .labelsHidden()
+                .frame(width: 170)
+            }
+            LabeledContent("字重") {
+                Picker("字重", selection: $viewModel.fontWeight) {
+                    ForEach(ReaderFontWeight.allCases) { Text($0.title).tag($0) }
+                }
+                .labelsHidden()
+                .pickerStyle(.segmented)
+                .frame(width: 170)
+            }
             settingSlider("Font size", value: $viewModel.fontSize, range: 10...28, format: "%.0f pt")
             settingSlider("Line spacing", value: $viewModel.lineSpacing, range: 0...12, format: "%.0f pt")
+            settingSlider("字距", value: $viewModel.letterSpacing, range: -0.5...2, format: "%.1f pt")
             ColorPicker("Text color", selection: $viewModel.textColor, supportsOpacity: false)
             settingSlider("Text opacity", value: $viewModel.textOpacity, range: 0...1, format: "%.0f%%", multiplier: 100)
             settingSlider("Background opacity", value: $viewModel.backgroundOpacity, range: 0...1, format: "%.0f%%", multiplier: 100)
@@ -217,23 +252,32 @@ struct StealthOverlayView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .padding(18)
-        .frame(width: 360)
+        .padding(20)
+        .frame(width: 380)
     }
 
     private var searchBar: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-            TextField("Search current book", text: $searchQuery)
-                .textFieldStyle(.plain)
-                .onSubmit { viewModel.search(for: searchQuery) }
-            if !viewModel.searchResultText.isEmpty {
-                Text(viewModel.searchResultText).font(.caption).foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                TextField("Search current book", text: $searchQuery)
+                    .textFieldStyle(.plain)
+                    .onSubmit { viewModel.search(for: searchQuery) }
+                if !viewModel.searchResultText.isEmpty {
+                    Text(viewModel.searchResultText).font(.caption).foregroundStyle(.secondary)
+                }
+                Button("Go") { viewModel.search(for: searchQuery) }.buttonStyle(.bordered)
             }
-            Button("Go") { viewModel.search(for: searchQuery) }.buttonStyle(.bordered)
+            if !viewModel.searchContext.isEmpty {
+                Text(viewModel.searchContext)
+                    .font(.caption)
+                    .lineLimit(2)
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, 22)
+            }
         }
         .padding(.horizontal, 13)
-        .frame(height: 35)
+        .padding(.vertical, 8)
         .background(footerColor)
     }
 
@@ -311,7 +355,6 @@ struct StealthOverlayView: View {
     }
 
     private var headerDesign: Font.Design { viewModel.appearance == .console ? .monospaced : .default }
-    private var bodyDesign: Font.Design { viewModel.appearance == .console ? .monospaced : .rounded }
     private var statusColor: Color { viewModel.appearance == .console ? .orange : Color(red: 0.05, green: 0.52, blue: 0.34) }
     private var foregroundColor: Color { viewModel.appearance == .console ? Color(red: 0.78, green: 0.90, blue: 0.80) : .primary }
     private var borderColor: Color { viewModel.appearance == .console ? .green.opacity(0.25) : .primary.opacity(0.13) }

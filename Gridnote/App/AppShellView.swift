@@ -13,20 +13,28 @@ struct AppShellView: View {
     var body: some View {
         OfficeWorkspaceView()
         .frame(minWidth: 720, minHeight: 480)
-        .background(WindowTitleView(title: windowTitle).frame(width: 0, height: 0))
+        .navigationTitle(windowTitle)
         .toolbar {
-            ToolbarItem {
-                Button { isLibraryPresented = true } label: { Image(systemName: "tray.full") }
+            ToolbarItemGroup {
+                Button { isLibraryPresented = true } label: {
+                    Label("数据文件", systemImage: "books.vertical")
+                }
+                    .labelStyle(.iconOnly)
+                    .symbolRenderingMode(.hierarchical)
                     .help("Data Files")
                     .accessibilityIdentifier("show-library")
-            }
-            ToolbarItem {
-                Button { isSettingsPresented = true } label: { Image(systemName: "slider.horizontal.3") }
+                Button { isSettingsPresented = true } label: {
+                    Label("设置", systemImage: "gearshape")
+                }
+                    .labelStyle(.iconOnly)
+                    .symbolRenderingMode(.hierarchical)
                     .help("Workspace Options")
                     .accessibilityIdentifier("show-settings")
-            }
-            ToolbarItem {
-                Button(action: showStealthReader) { Image(systemName: "rectangle.dashed") }
+                Button(action: showStealthReader) {
+                    Label("悬浮阅读", systemImage: "rectangle.on.rectangle")
+                }
+                    .labelStyle(.iconOnly)
+                    .symbolRenderingMode(.hierarchical)
                     .help("Quick Panel")
                     .accessibilityIdentifier("show-floating-reader")
             }

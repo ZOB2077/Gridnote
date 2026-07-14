@@ -5,41 +5,124 @@ struct StealthMenuBarView: View {
     @EnvironmentObject private var stealthController: StealthOverlayController
 
     var body: some View {
-        if stealthController.superStealthMode {
-            Text("Super Stealth Controls")
-                .font(.headline)
-            Text("Text-only floating reader is active")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 14) {
+            header
+            progressCard
+            primaryControls
+
+            if stealthController.superStealthMode {
+                stealthStatus
+            }
+
+            if !stealthController.viewModel.chapters.isEmpty {
+                chapterMenu
+            }
+
             Divider()
-            Button("Show Floating Reader") {
-                stealthController.show(bookID: nil)
+            Button {
+                openDataHub()
+            } label: {
+                Label("打开数据中心", systemImage: "macwindow")
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            Button(String(format: String(localized: "Show / Hide  %@"), stealthController.toggleShortcut.title)) {
-                stealthController.toggleVisibility()
+            .buttonStyle(.plain)
+        }
+        .padding(16)
+        .frame(width: 330)
+    }
+
+    private var header: some View {
+        HStack(spacing: 10) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .fill(Color.accentColor.gradient)
+                Image(systemName: "tablecells")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(.white)
             }
-            Button(String(format: String(localized: "Previous Page  %@"), stealthController.previousShortcut.title)) {
+            .frame(width: 34, height: 34)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("阅读控制中心").font(.headline)
+                Text(stealthController.superStealthMode ? "超级隐蔽模式已开启" : "悬浮阅读待命")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Circle()
+                .fill(stealthController.superStealthMode ? Color.green : Color.secondary.opacity(0.45))
+                .frame(width: 8, height: 8)
+        }
+    }
+
+    private var progressCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(stealthController.viewModel.progressDetailText.isEmpty ? "尚未开始阅读" : stealthController.viewModel.progressDetailText)
+                    .font(.caption.weight(.medium))
+                    .lineLimit(1)
+                Spacer()
+                Text("\(Int((stealthController.viewModel.progressFraction * 100).rounded()))%")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            ProgressView(value: stealthController.viewModel.progressFraction)
+                .progressViewStyle(.linear)
+                .controlSize(.small)
+        }
+        .padding(12)
+        .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+
+    private var primaryControls: some View {
+        HStack(spacing: 8) {
+            controlButton("chevron.backward", title: "上一页", shortcut: stealthController.previousShortcut.title) {
                 stealthController.previous()
             }
-            Button(String(format: String(localized: "Next Page  %@"), stealthController.nextShortcut.title)) {
+            controlButton("rectangle.on.rectangle", title: "显示", shortcut: stealthController.toggleShortcut.title) {
+                stealthController.toggleVisibility()
+            }
+            controlButton("chevron.forward", title: "下一页", shortcut: stealthController.nextShortcut.title) {
                 stealthController.next()
             }
-            if !stealthController.viewModel.chapters.isEmpty {
-                Menu("Chapters") {
-                    ForEach(stealthController.viewModel.chapters) { chapter in
-                        Button(chapter.title) { stealthController.viewModel.jump(to: chapter) }
-                    }
-                }
-            }
-        } else {
-            Button("Show Floating Reader") {
-                stealthController.show(bookID: nil)
-            }
         }
-        Divider()
-        Button("Open Data Hub") {
-            NSApp.activate(ignoringOtherApps: true)
-            NSApp.windows.first(where: { $0.canBecomeMain })?.makeKeyAndOrderFront(nil)
+    }
+
+    private func controlButton(_ icon: String, title: String, shortcut: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 5) {
+                Image(systemName: icon).font(.system(size: 13, weight: .semibold))
+                Text(title).font(.caption.weight(.medium))
+                Text(shortcut).font(.system(size: 9, design: .monospaced)).foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 9)
+            .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
         }
+        .buttonStyle(.plain)
+    }
+
+    private var stealthStatus: some View {
+        Label("纯文字显示，边框与组件已隐藏", systemImage: "eye.slash.fill")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 2)
+    }
+
+    private var chapterMenu: some View {
+        Menu {
+            ForEach(stealthController.viewModel.chapters) { chapter in
+                Button(chapter.title) { stealthController.viewModel.jump(to: chapter) }
+            }
+        } label: {
+            Label("跳转章节", systemImage: "list.bullet.rectangle")
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .menuStyle(.borderlessButton)
+    }
+
+    private func openDataHub() {
+        NSApp.activate(ignoringOtherApps: true)
+        NSApp.windows.first(where: { $0.canBecomeMain })?.makeKeyAndOrderFront(nil)
     }
 }

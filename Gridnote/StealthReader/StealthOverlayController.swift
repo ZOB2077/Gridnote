@@ -67,13 +67,16 @@ struct SuperStealthDisplaySize: Equatable {
     static let widthRange: ClosedRange<CGFloat> = 260...1800
     // Supports a single readable line at the largest supported reader font size.
     static let heightRange: ClosedRange<CGFloat> = 42...600
-    static let `default` = SuperStealthDisplaySize(width: 620, height: 180)
+    static let `default` = SuperStealthDisplaySize(width: 620, maximumWidth: 1000, height: 180)
 
     let width: CGFloat
+    let maximumWidth: CGFloat
     let height: CGFloat
 
-    init(width: CGFloat, height: CGFloat) {
-        self.width = min(max(width, Self.widthRange.lowerBound), Self.widthRange.upperBound)
+    init(width: CGFloat, maximumWidth: CGFloat = Self.widthRange.upperBound, height: CGFloat) {
+        let clampedWidth = min(max(width, Self.widthRange.lowerBound), Self.widthRange.upperBound)
+        self.width = clampedWidth
+        self.maximumWidth = min(max(maximumWidth, clampedWidth), Self.widthRange.upperBound)
         self.height = min(max(height, Self.heightRange.lowerBound), Self.heightRange.upperBound)
     }
 }
@@ -157,6 +160,7 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
         static let shortcutProfileVersion = "stealthReader.shortcutProfileVersion"
         static let hidesOnAppResignActive = "stealthReader.hidesOnAppResignActive"
         static let superStealthWidth = "stealthReader.superStealthWidth"
+        static let superStealthMaximumWidth = "stealthReader.superStealthMaximumWidth"
         static let superStealthHeight = "stealthReader.superStealthHeight"
     }
 
@@ -177,6 +181,7 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
         usesFocusShieldFade = FloatingReaderFocusShieldSettings.usesFade(in: defaults)
         superStealthDisplaySize = SuperStealthDisplaySize(
             width: CGFloat(defaults.object(forKey: Keys.superStealthWidth) as? Double ?? Double(SuperStealthDisplaySize.default.width)),
+            maximumWidth: CGFloat(defaults.object(forKey: Keys.superStealthMaximumWidth) as? Double ?? Double(SuperStealthDisplaySize.default.maximumWidth)),
             height: CGFloat(defaults.object(forKey: Keys.superStealthHeight) as? Double ?? Double(SuperStealthDisplaySize.default.height))
         )
         viewModel = StealthReaderViewModel(context: context, defaults: defaults)
@@ -263,24 +268,40 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
     }
 
     func setSuperStealthDisplaySize(width: CGFloat, height: CGFloat) {
-        let size = SuperStealthDisplaySize(width: width, height: height)
+        let size = SuperStealthDisplaySize(width: width, maximumWidth: superStealthDisplaySize.maximumWidth, height: height)
         superStealthDisplaySize = size
         defaults.set(Double(size.width), forKey: Keys.superStealthWidth)
+        defaults.set(Double(size.maximumWidth), forKey: Keys.superStealthMaximumWidth)
         defaults.set(Double(size.height), forKey: Keys.superStealthHeight)
         guard superStealthMode else { return }
         applyPanelSize(size: NSSize(width: size.width, height: size.height))
     }
 
+    func setSuperStealthMaximumWidth(_ maximumWidth: CGFloat) {
+        let size = SuperStealthDisplaySize(
+            width: superStealthDisplaySize.width,
+            maximumWidth: maximumWidth,
+            height: superStealthDisplaySize.height
+        )
+        superStealthDisplaySize = size
+        defaults.set(Double(size.maximumWidth), forKey: Keys.superStealthMaximumWidth)
+        guard superStealthMode else { return }
+        panel?.maxSize.width = size.maximumWidth
+        if let panel, panel.frame.width > size.maximumWidth {
+            applyPanelSize(size: NSSize(width: size.maximumWidth, height: panel.frame.height), to: panel)
+        }
+    }
+
     var maximumSuperStealthTextWidth: CGFloat {
-        guard let panel else { return SuperStealthDisplaySize.widthRange.upperBound - 32 }
-        let screenWidth = (panel.screen ?? NSScreen.main)?.visibleFrame.width ?? SuperStealthDisplaySize.widthRange.upperBound
-        return max(120, min(screenWidth - 28, SuperStealthDisplaySize.widthRange.upperBound) - 32)
+        guard let panel else { return superStealthDisplaySize.maximumWidth - 32 }
+        let screenWidth = (panel.screen ?? NSScreen.main)?.visibleFrame.width ?? superStealthDisplaySize.maximumWidth
+        return max(120, min(screenWidth - 28, superStealthDisplaySize.maximumWidth) - 32)
     }
 
     func adjustSuperStealthWidth(for measuredTextWidth: CGFloat) {
         guard superStealthMode, let panel else { return }
         let screenWidth = (panel.screen ?? NSScreen.main)?.visibleFrame.width ?? SuperStealthDisplaySize.widthRange.upperBound
-        let availableWidth = min(screenWidth - 28, SuperStealthDisplaySize.widthRange.upperBound)
+        let availableWidth = min(screenWidth - 28, superStealthDisplaySize.maximumWidth)
         let minimumWidth = min(superStealthDisplaySize.width, availableWidth)
         let targetWidth = min(max(measuredTextWidth + 32, minimumWidth), availableWidth)
         guard abs(panel.frame.width - targetWidth) > 2 else { return }
@@ -384,7 +405,7 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
         guard let panel = targetPanel ?? panel else { return }
         if superStealthMode {
             panel.minSize = NSSize(width: SuperStealthDisplaySize.widthRange.lowerBound, height: SuperStealthDisplaySize.heightRange.lowerBound)
-            panel.maxSize = NSSize(width: SuperStealthDisplaySize.widthRange.upperBound, height: SuperStealthDisplaySize.heightRange.upperBound)
+            panel.maxSize = NSSize(width: superStealthDisplaySize.maximumWidth, height: SuperStealthDisplaySize.heightRange.upperBound)
             applyPanelSize(size: NSSize(width: superStealthDisplaySize.width, height: superStealthDisplaySize.height), to: panel)
         } else {
             panel.minSize = NSSize(width: 420, height: 140)

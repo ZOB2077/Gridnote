@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Security fixes are applied to the latest version on the `main` branch. `v0.1.2` is a personal-Mac preview and is not notarized for broad distribution.
+Security fixes are applied to the latest version on the `main` branch. `v0.1.3` is a personal-Mac preview and is not notarized for broad distribution.
 
 ## Reporting A Vulnerability
 

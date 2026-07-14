@@ -44,7 +44,7 @@ struct GridnoteApp: App {
         }
         .modelContainer(modelContainer)
 
-        MenuBarExtra("Data Hub", systemImage: "chart.bar.doc.horizontal") {
+        MenuBarExtra("Data Hub", systemImage: "tablecells") {
             StealthMenuBarView()
                 .environmentObject(stealthController)
         }

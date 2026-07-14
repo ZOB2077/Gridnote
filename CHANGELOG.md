@@ -2,6 +2,20 @@
 
 All notable changes are documented in this file. Gridnote follows [Semantic Versioning](https://semver.org/) for public releases where practical.
 
+## [0.1.3] - 2026-07-14
+
+### Added
+
+- Added font family, font weight, letter spacing, search-result context, chapter information, and exact text-offset progress controls.
+- Added a configurable maximum width for Super Stealth mode and a compact menu-bar control center.
+
+### Changed
+
+- Redesigned settings as a native two-column macOS preferences surface and completed the Chinese localization audit.
+- Removed cross-page character overlap so sequential pages continue without repeated context or missing text.
+- Refined floating controls, toolbar symbol semantics, and the macOS application icon.
+- Aligned Super Stealth pagination and window sizing with the configured maximum width.
+
 ## [0.1.2] - 2026-07-14
 
 ### Changed
@@ -50,3 +64,4 @@ All notable changes are documented in this file. Gridnote follows [Semantic Vers
 [0.1.0]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.0
 [0.1.1]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.1
 [0.1.2]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.2
+[0.1.3]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.3

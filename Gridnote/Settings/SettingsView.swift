@@ -13,6 +13,7 @@ struct SettingsView: View {
 private struct SettingsContent: View {
     @StateObject private var viewModel: SettingsViewModel
     @ObservedObject private var stealthController: StealthOverlayController
+    @State private var selectedPane: SettingsPane = .floatingReader
 
     init(context: ModelContext, bookID: UUID?, stealthController: StealthOverlayController) {
         _viewModel = StateObject(wrappedValue: SettingsViewModel(context: context, bookID: bookID))
@@ -20,38 +21,103 @@ private struct SettingsContent: View {
     }
 
     var body: some View {
-        TabView {
-            Form {
-                ColorPicker("Text color", selection: $viewModel.textColor, supportsOpacity: false)
-                LabeledContent("Text opacity") {
-                    Slider(value: $viewModel.textOpacity, in: 0...1)
-                    Text("\(Int((viewModel.textOpacity * 100).rounded()))%").frame(width: 42)
+        HStack(spacing: 0) {
+            settingsSidebar
+            Divider()
+            Group {
+                switch selectedPane {
+                case .floatingReader: floatingReaderPage
+                case .officeDisguise: officeDisguisePage
                 }
-                Text("Applies to Floating Reader and spreadsheet notes.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Button("Save Text Appearance") { viewModel.saveReadingSettings() }
-                    .accessibilityIdentifier("save-reading-settings")
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .background(Color(nsColor: .windowBackgroundColor))
+        .frame(minWidth: 680, idealWidth: 760, minHeight: 560, idealHeight: 700)
+        .task { viewModel.load() }
+        .alert("设置", isPresented: Binding(get: { viewModel.message != nil }, set: { if !$0 { viewModel.message = nil } })) {
+            Button("确定", role: .cancel) { viewModel.message = nil }
+        } message: { Text(viewModel.message ?? "") }
+    }
 
-                Divider()
-                Toggle("Super Stealth Mode", isOn: Binding(
+    private var settingsSidebar: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("设置")
+                .font(.title2.weight(.semibold))
+                .padding(.horizontal, 12)
+                .padding(.bottom, 14)
+
+            ForEach(SettingsPane.allCases) { pane in
+                Button {
+                    selectedPane = pane
+                } label: {
+                    Label(pane.title, systemImage: pane.systemImage)
+                        .font(.body.weight(selectedPane == pane ? .semibold : .regular))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 9)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(selectedPane == pane ? Color.accentColor.opacity(0.14) : .clear)
+                        )
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(selectedPane == pane ? Color.accentColor : Color.primary)
+            }
+
+            Spacer()
+            Label("所有设置仅保存在本机", systemImage: "lock.shield")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(12)
+        }
+        .padding(.top, 24)
+        .padding(.horizontal, 12)
+        .frame(width: 190)
+        .background(.regularMaterial)
+    }
+
+    private var floatingReaderPage: some View {
+        settingsPage(
+            title: "悬浮阅读",
+            subtitle: "调整文字外观、隐蔽行为与全局操作方式。"
+        ) {
+            settingsSection("文字外观", systemImage: "textformat") {
+                ColorPicker("文字颜色", selection: $viewModel.textColor, supportsOpacity: false)
+                responsiveSlider("文字透明度", value: $viewModel.textOpacity, range: 0...1) {
+                    "\(Int(($0 * 100).rounded()))%"
+                }
+                helpText("同时应用于悬浮阅读和表格顶部编辑栏。")
+                actionButton("保存文字外观") { viewModel.saveReadingSettings() }
+                    .accessibilityIdentifier("save-reading-settings")
+            }
+
+            settingsSection("超级隐蔽模式", systemImage: "eye.slash") {
+                Toggle("启用超级隐蔽模式", isOn: Binding(
                     get: { stealthController.superStealthMode },
                     set: { stealthController.setSuperStealthMode($0) }
                 ))
-                Text("Removes the floating window background, border, and controls. Use the menu bar or global shortcuts to control it.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                helpText("移除悬浮窗背景、边框和控制组件，通过菜单栏或全局快捷键操作。")
                 if stealthController.superStealthMode {
-                    superStealthSizeSlider("Super Stealth minimum width", value: Binding(
+                    Divider()
+                    superStealthSizeSlider("最小显示宽度", value: Binding(
                         get: { Double(stealthController.superStealthDisplaySize.width) },
                         set: { stealthController.setSuperStealthDisplaySize(width: CGFloat($0), height: stealthController.superStealthDisplaySize.height) }
                     ), range: SuperStealthDisplaySize.widthRange)
-                    superStealthSizeSlider("Super Stealth display height", value: Binding(
+                    superStealthSizeSlider("最大显示宽度", value: Binding(
+                        get: { Double(stealthController.superStealthDisplaySize.maximumWidth) },
+                        set: { stealthController.setSuperStealthMaximumWidth(CGFloat($0)) }
+                    ), range: stealthController.superStealthDisplaySize.width...SuperStealthDisplaySize.widthRange.upperBound)
+                    superStealthSizeSlider("显示高度", value: Binding(
                         get: { Double(stealthController.superStealthDisplaySize.height) },
                         set: { stealthController.setSuperStealthDisplaySize(width: stealthController.superStealthDisplaySize.width, height: CGFloat($0)) }
                     ), range: SuperStealthDisplaySize.heightRange)
+                    helpText("宽度会在设定下限和屏幕安全范围之间自动调整。")
                 }
-                Toggle("Hide Floating Reader when Data Hub loses focus", isOn: Binding(
+            }
+
+            settingsSection("失焦保护", systemImage: "rectangle.badge.xmark") {
+                Toggle("应用失去焦点时隐藏悬浮阅读", isOn: Binding(
                     get: { stealthController.hidesOnAppResignActive },
                     set: { stealthController.setHidesOnAppResignActive($0) }
                 ))
@@ -60,92 +126,131 @@ private struct SettingsContent: View {
                         get: { stealthController.usesFocusShieldFade },
                         set: { stealthController.setFocusShield(delay: stealthController.focusShieldDelay, usesFade: $0) }
                     ))
-                    LabeledContent("失焦遮蔽延迟") {
-                        HStack(spacing: 8) {
-                            Slider(value: Binding(
-                                get: { stealthController.focusShieldDelay },
-                                set: { stealthController.setFocusShield(delay: $0, usesFade: stealthController.usesFocusShieldFade) }
-                            ), in: FloatingReaderFocusShieldSettings.delayRange, step: 0.1)
-                            Text(String(format: "%.1f 秒", stealthController.focusShieldDelay))
-                                .monospacedDigit()
-                                .frame(width: 46, alignment: .trailing)
-                        }
+                    responsiveSlider("遮蔽延迟", value: Binding(
+                        get: { stealthController.focusShieldDelay },
+                        set: { stealthController.setFocusShield(delay: $0, usesFade: stealthController.usesFocusShieldFade) }
+                    ), range: FloatingReaderFocusShieldSettings.delayRange, step: 0.1) {
+                        String(format: "%.1f 秒", $0)
                     }
-                    Text("默认立即遮蔽。设置延迟后，悬浮阅读会在延迟结束时淡出；公式栏会立即切回业务备注。")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    helpText("默认立即遮蔽；延迟后悬浮文字淡出，顶部编辑栏立即恢复业务备注。")
                 }
-                shortcutPicker("Previous page", action: .previous)
-                shortcutPicker("Next page", action: .next)
-                shortcutPicker("Show / hide", action: .hide)
             }
-            .padding(20)
-            .tabItem { Label("Floating Reader", systemImage: "rectangle.on.rectangle") }
 
-            Form {
+            settingsSection("全局快捷键", systemImage: "keyboard") {
+                shortcutPicker("上一页", action: .previous)
+                shortcutPicker("下一页", action: .next)
+                shortcutPicker("显示或隐藏", action: .hide)
+            }
+        }
+    }
+
+    private var officeDisguisePage: some View {
+        settingsPage(
+            title: "办公伪装",
+            subtitle: "管理工作簿外观、演示数据和顶部编辑栏隐私。"
+        ) {
+            settingsSection("书籍伪装", systemImage: "doc.badge.gearshape") {
                 if viewModel.bookID != nil {
-                    TextField("Display alias", text: $viewModel.aliasTitle)
+                    TextField("显示别名", text: $viewModel.aliasTitle)
                         .accessibilityIdentifier("alias-title")
-                    TextField("Workbook title", text: $viewModel.workbookTitle)
+                    TextField("工作簿标题", text: $viewModel.workbookTitle)
                         .accessibilityIdentifier("workbook-title")
-                    TextField("Sheet name", text: $viewModel.sheetName)
+                    TextField("工作表名称", text: $viewModel.sheetName)
                         .accessibilityIdentifier("sheet-name")
-                    Button("Save Disguise") { viewModel.saveAlias() }
+                    actionButton("保存伪装设置") { viewModel.saveAlias() }
                         .accessibilityIdentifier("save-alias")
                 } else {
-                    ContentUnavailableView("No active book", systemImage: "doc")
+                    Label("导入并选择书籍后可设置显示别名", systemImage: "info.circle")
+                        .foregroundStyle(.secondary)
                 }
+            }
 
-                Divider()
-                Picker("办公数据主题", selection: $viewModel.officeTemplateFamily) {
+            settingsSection("办公数据", systemImage: "tablecells") {
+                Picker("演示数据主题", selection: $viewModel.officeTemplateFamily) {
                     ForEach(OfficeTemplateFamily.allCases, id: \.self) { template in
                         Text(template.disguiseTitle).tag(template)
                     }
                 }
-                Text("切换后会将当前表格替换为纯虚构的演示数据；阅读进度和书签不受影响。")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Toggle("自动遮蔽公式栏正文", isOn: $viewModel.autoMaskFormulaBar)
-                Picker("公式栏阅读行数", selection: $viewModel.formulaBarLineCount) {
+                .frame(maxWidth: 300)
+                helpText("切换后以纯虚构演示数据替换当前表格，不影响阅读进度和书签。")
+            }
+
+            settingsSection("顶部编辑栏隐私", systemImage: "text.rectangle") {
+                Toggle("自动遮蔽阅读正文", isOn: $viewModel.autoMaskFormulaBar)
+                Picker("阅读行数", selection: $viewModel.formulaBarLineCount) {
                     ForEach(OfficeFormulaMaskSettings.lineCountRange, id: \.self) { count in
                         Text("\(count) 行").tag(count)
                     }
                 }
                 .pickerStyle(.segmented)
+                .frame(maxWidth: 300)
                 if viewModel.autoMaskFormulaBar {
-                    LabeledContent("自动遮蔽延迟") {
-                        HStack(spacing: 8) {
-                            Slider(value: $viewModel.formulaBarMaskDelay, in: OfficeFormulaMaskSettings.delayRange, step: 1)
-                            Text("\(Int(viewModel.formulaBarMaskDelay.rounded())) 秒")
-                                .monospacedDigit()
-                                .frame(width: 42, alignment: .trailing)
-                        }
+                    responsiveSlider("自动遮蔽延迟", value: $viewModel.formulaBarMaskDelay, range: OfficeFormulaMaskSettings.delayRange, step: 1) {
+                        "\(Int($0.rounded())) 秒"
                     }
                 }
-                Toggle("鼠标离开公式栏后遮蔽", isOn: $viewModel.maskFormulaBarOnPointerExit)
+                Toggle("鼠标离开后遮蔽", isOn: $viewModel.maskFormulaBarOnPointerExit)
                 if viewModel.autoMaskFormulaBar && viewModel.maskFormulaBarOnPointerExit {
-                    LabeledContent("离开后遮蔽延迟") {
-                        HStack(spacing: 8) {
-                            Slider(value: $viewModel.formulaBarPointerExitDelay, in: OfficeFormulaMaskSettings.pointerExitDelayRange, step: 0.05)
-                            Text(String(format: "%.2f 秒", viewModel.formulaBarPointerExitDelay))
-                                .monospacedDigit()
-                                .frame(width: 50, alignment: .trailing)
-                        }
+                    responsiveSlider("离开后遮蔽延迟", value: $viewModel.formulaBarPointerExitDelay, range: OfficeFormulaMaskSettings.pointerExitDelayRange, step: 0.05) {
+                        String(format: "%.2f 秒", $0)
                     }
                 }
-                Text("停止操作后，公式栏正文会替换为业务备注。翻页、查找或点击公式栏可立即恢复。")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Button("保存办公隐私设置") { viewModel.saveOfficePrivacySettings() }
+                helpText("停止操作后正文替换为业务备注；翻页、查找或点击编辑栏可立即恢复。")
+                actionButton("保存办公隐私设置") { viewModel.saveOfficePrivacySettings() }
             }
-            .padding(20)
-            .tabItem { Label("Office", systemImage: "tablecells") }
         }
-        .frame(width: 560, height: 620)
-        .task { viewModel.load() }
-        .alert("Settings", isPresented: Binding(get: { viewModel.message != nil }, set: { if !$0 { viewModel.message = nil } })) {
-            Button("OK", role: .cancel) { viewModel.message = nil }
-        } message: { Text(viewModel.message ?? "") }
+    }
+
+    private func settingsPage<Content: View>(
+        title: String,
+        subtitle: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(title).font(.largeTitle.weight(.semibold))
+                    Text(subtitle).font(.callout).foregroundStyle(.secondary)
+                }
+                .padding(.bottom, 4)
+                content()
+            }
+            .frame(maxWidth: 560, alignment: .leading)
+            .padding(.horizontal, 32)
+            .padding(.vertical, 28)
+            .frame(maxWidth: .infinity, alignment: .top)
+        }
+    }
+
+    private func settingsSection<Content: View>(
+        _ title: String,
+        systemImage: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Label(title, systemImage: systemImage)
+                .font(.headline)
+            Divider()
+            content()
+        }
+        .padding(18)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(nsColor: .controlBackgroundColor))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+    }
+
+    private func actionButton(_ title: String, action: @escaping () -> Void) -> some View {
+        HStack {
+            Spacer()
+            Button(title, action: action)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
+        }
     }
 
     private func shortcutPicker(_ title: String, action: StealthShortcutAction) -> some View {
@@ -157,6 +262,7 @@ private struct SettingsContent: View {
                 Text(shortcut.title).tag(shortcut)
             }
         }
+        .frame(maxWidth: 300)
     }
 
     private func superStealthSizeSlider(
@@ -164,13 +270,59 @@ private struct SettingsContent: View {
         value: Binding<Double>,
         range: ClosedRange<CGFloat>
     ) -> some View {
+        responsiveSlider(title, value: value, range: Double(range.lowerBound)...Double(range.upperBound), step: 10) {
+            "\(Int($0.rounded())) px"
+        }
+    }
+
+    private func responsiveSlider(
+        _ title: String,
+        value: Binding<Double>,
+        range: ClosedRange<Double>,
+        step: Double? = nil,
+        valueText: @escaping (Double) -> String
+    ) -> some View {
         LabeledContent(title) {
-            HStack(spacing: 8) {
-                Slider(value: value, in: Double(range.lowerBound)...Double(range.upperBound), step: 10)
-                Text("\(Int(value.wrappedValue.rounded())) px")
+            HStack(spacing: 10) {
+                if let step {
+                    Slider(value: value, in: range, step: step)
+                } else {
+                    Slider(value: value, in: range)
+                }
+                Text(valueText(value.wrappedValue))
                     .monospacedDigit()
-                    .frame(width: 58, alignment: .trailing)
+                    .lineLimit(1)
+                    .frame(minWidth: 52, alignment: .trailing)
             }
+            .frame(minWidth: 200, maxWidth: 320)
+        }
+    }
+
+    private func helpText(_ text: String) -> some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+private enum SettingsPane: String, CaseIterable, Identifiable {
+    case floatingReader
+    case officeDisguise
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .floatingReader: "悬浮阅读"
+        case .officeDisguise: "办公伪装"
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .floatingReader: "rectangle.on.rectangle"
+        case .officeDisguise: "tablecells"
         }
     }
 }
@@ -178,9 +330,9 @@ private struct SettingsContent: View {
 @MainActor
 final class SettingsViewModel: ObservableObject {
     let bookID: UUID?
-    @Published var aliasTitle = "Quarterly Plan"
-    @Published var workbookTitle = "Operations Dashboard.xlsx"
-    @Published var sheetName = "Overview"
+    @Published var aliasTitle = "季度计划"
+    @Published var workbookTitle = "运营数据看板.xlsx"
+    @Published var sheetName = "订单明细"
     @Published var fontSize = 18.0
     @Published var lineHeight = 8.0
     @Published var theme = "system"

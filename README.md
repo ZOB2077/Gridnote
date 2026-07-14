@@ -9,14 +9,14 @@
 
 Gridnote keeps books, reading progress, aliases, bookmarks, and settings on the Mac. Its primary workspace resembles a compact data workbook populated exclusively with synthetic demo records, while the floating reader provides a minimal, resizable reading surface for short sessions. It is designed for personal reading, not as an Excel replacement or a content distribution service.
 
-**Status:** `v0.1.2` personal-Mac preview. The application is functional, but distribution signing and notarization are not complete.
+**Status:** `v0.1.3` personal-Mac preview. The application is functional, but distribution signing and notarization are not complete.
 
 ## Highlights
 
 - Local TXT and non-DRM EPUB import. TXT decoding supports UTF-8, UTF-16, GB18030, and common fallback encodings.
 - Persistent reading location, full-text search, bookmarks, chapter navigation, and per-book aliases.
 - A dense, original office workspace containing synthetic demo data, with novel excerpts shown in the formula bar rather than the grid.
-- Floating reader with page-based layout, transparency controls, reading-progress indicator, edge snapping, and an optional borderless Super Stealth mode.
+- Floating reader with page-based layout, transparency controls, precise reading progress, typography controls, and an optional borderless Super Stealth mode.
 - Bidirectional progress sync: navigating in the office formula bar or floating reader continues from the same location.
 - Configurable shortcut profile. Defaults are `F7` previous, `F8` next, and `F9` show or hide the floating reader.
 - No accounts, networking, analytics, cloud sync, DRM removal, or online catalog.

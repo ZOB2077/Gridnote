@@ -216,13 +216,13 @@ private struct OfficeWorkspaceContent: View {
 
     private var utilityControls: some View {
         HStack(spacing: 11) {
-            Button(action: previousExcerpt) { Image(systemName: "chevron.left") }
+            Button(action: previousExcerpt) { Image(systemName: "chevron.backward") }
                 .help("Previous Text (F7 by default)")
                 .accessibilityIdentifier("office-excerpt-previous")
-            Button(action: nextExcerpt) { Image(systemName: "chevron.right") }
+            Button(action: nextExcerpt) { Image(systemName: "chevron.forward") }
                 .help("Next Text (F8 by default)")
                 .accessibilityIdentifier("office-excerpt-next")
-            Button { isImporterPresented = true } label: { Image(systemName: "square.and.arrow.down") }
+            Button { isImporterPresented = true } label: { Image(systemName: "doc.badge.plus") }
                 .help("Import Book")
                 .accessibilityIdentifier("import-book")
             Button { stealthController.show(bookID: appState.selectedBookID) } label: { Image(systemName: "rectangle.on.rectangle") }

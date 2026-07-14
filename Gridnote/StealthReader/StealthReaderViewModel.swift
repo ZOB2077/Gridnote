@@ -51,6 +51,65 @@ enum FloatingReaderDensity: String, CaseIterable, Hashable, Identifiable {
     }
 }
 
+enum ReaderFontFamily: String, CaseIterable, Identifiable {
+    case system
+    case rounded
+    case serif
+    case monospaced
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .system: "系统"
+        case .rounded: "圆体"
+        case .serif: "宋体"
+        case .monospaced: "等宽"
+        }
+    }
+
+    var design: Font.Design {
+        switch self {
+        case .system: .default
+        case .rounded: .rounded
+        case .serif: .serif
+        case .monospaced: .monospaced
+        }
+    }
+}
+
+enum ReaderFontWeight: String, CaseIterable, Identifiable {
+    case regular
+    case medium
+    case semibold
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .regular: "常规"
+        case .medium: "中等"
+        case .semibold: "半粗"
+        }
+    }
+
+    var swiftUIWeight: Font.Weight {
+        switch self {
+        case .regular: .regular
+        case .medium: .medium
+        case .semibold: .semibold
+        }
+    }
+
+    var appKitWeight: NSFont.Weight {
+        switch self {
+        case .regular: .regular
+        case .medium: .medium
+        case .semibold: .semibold
+        }
+    }
+}
+
 enum FloatingReaderPageDirection: Equatable {
     case forward
     case backward
@@ -69,10 +128,15 @@ struct FloatingReaderPageLayout: Equatable {
 }
 
 enum FloatingReaderPaginator {
-    static let contextOverlap = 6
     private static let semanticBreaks = CharacterSet(charactersIn: "。！？!?；;，,\n\r")
 
-    static func singleLineLayout(text: NSString, start: Int, maximumWidth: CGFloat, font: NSFont) -> FloatingReaderPageLayout {
+    static func singleLineLayout(
+        text: NSString,
+        start: Int,
+        maximumWidth: CGFloat,
+        font: NSFont,
+        letterSpacing: CGFloat = 0
+    ) -> FloatingReaderPageLayout {
         guard text.length > 0 else { return .init(range: NSRange(location: 0, length: 0), measuredWidth: 0, nextOffset: nil) }
         let safeStart = min(max(start, 0), text.length - 1)
         let remaining = text.length - safeStart
@@ -83,7 +147,7 @@ enum FloatingReaderPaginator {
         while low <= high {
             let middle = (low + high) / 2
             let candidate = text.rangeOfComposedCharacterSequences(for: NSRange(location: safeStart, length: middle))
-            if measuredWidth(of: text, range: candidate, font: font) <= maximumWidth {
+            if measuredWidth(of: text, range: candidate, font: font, letterSpacing: letterSpacing) <= maximumWidth {
                 fittedLength = candidate.length
                 low = middle + 1
             } else {
@@ -95,9 +159,9 @@ enum FloatingReaderPaginator {
         if range.location + range.length < text.length, let semanticLength = semanticLength(in: text, range: range) {
             range.length = semanticLength
         }
-        let width = measuredWidth(of: text, range: range, font: font)
+        let width = measuredWidth(of: text, range: range, font: font, letterSpacing: letterSpacing)
         let end = range.location + range.length
-        let nextOffset = end < text.length ? composedOffset(before: end, count: contextOverlap, in: text, floor: range.location + 1) : nil
+        let nextOffset = end < text.length ? end : nil
         return .init(range: range, measuredWidth: width, nextOffset: nextOffset)
     }
 
@@ -111,22 +175,14 @@ enum FloatingReaderPaginator {
         return nil
     }
 
-    private static func measuredWidth(of text: NSString, range: NSRange, font: NSFont) -> CGFloat {
+    private static func measuredWidth(of text: NSString, range: NSRange, font: NSFont, letterSpacing: CGFloat) -> CGFloat {
         let display = text.substring(with: range)
             .replacingOccurrences(of: "\r\n", with: " ")
             .replacingOccurrences(of: "\n", with: " ")
             .replacingOccurrences(of: "\r", with: " ")
-        return ceil(NSAttributedString(string: display, attributes: [.font: font]).size().width)
+        return ceil(NSAttributedString(string: display, attributes: [.font: font, .kern: letterSpacing]).size().width)
     }
 
-    private static func composedOffset(before end: Int, count: Int, in text: NSString, floor: Int) -> Int {
-        var position = end
-        for _ in 0..<count where position > floor {
-            let sequence = text.rangeOfComposedCharacterSequence(at: position - 1)
-            position = max(sequence.location, floor)
-        }
-        return position
-    }
 }
 
 @MainActor
@@ -146,6 +202,8 @@ final class StealthReaderViewModel: ObservableObject {
     @Published private(set) var chapters: [FloatingReaderChapter] = []
     @Published private(set) var isCurrentLocationBookmarked = false
     @Published private(set) var searchResultText = ""
+    @Published private(set) var searchContext = ""
+    @Published private(set) var progressDetailText = ""
     @Published private(set) var pageRevision = 0
     @Published private(set) var pageDirection: FloatingReaderPageDirection = .forward
     @Published var charactersPerPage: Int {
@@ -159,6 +217,24 @@ final class StealthReaderViewModel: ObservableObject {
     }
     @Published var lineSpacing: Double {
         didSet { defaults.set(lineSpacing, forKey: Keys.lineSpacing) }
+    }
+    @Published var letterSpacing: Double {
+        didSet {
+            defaults.set(letterSpacing, forKey: Keys.letterSpacing)
+            refreshPage()
+        }
+    }
+    @Published var fontFamily: ReaderFontFamily {
+        didSet {
+            defaults.set(fontFamily.rawValue, forKey: Keys.fontFamily)
+            singleLineFont = nil
+        }
+    }
+    @Published var fontWeight: ReaderFontWeight {
+        didSet {
+            defaults.set(fontWeight.rawValue, forKey: Keys.fontWeight)
+            singleLineFont = nil
+        }
     }
     @Published var backgroundOpacity: Double {
         didSet { defaults.set(backgroundOpacity, forKey: Keys.backgroundOpacity) }
@@ -205,6 +281,9 @@ final class StealthReaderViewModel: ObservableObject {
         static let charactersPerPage = "stealthReader.charactersPerPage"
         static let fontSize = "stealthReader.fontSize"
         static let lineSpacing = "stealthReader.lineSpacing"
+        static let letterSpacing = "stealthReader.letterSpacing"
+        static let fontFamily = "stealthReader.fontFamily"
+        static let fontWeight = "stealthReader.fontWeight"
         static let backgroundOpacity = "stealthReader.backgroundOpacity"
         static let appearance = "stealthReader.appearance"
         static let density = "stealthReader.density"
@@ -234,6 +313,9 @@ final class StealthReaderViewModel: ObservableObject {
         charactersPerPage = min(max(defaults.object(forKey: Keys.charactersPerPage) as? Int ?? 360, 80), 1600)
         fontSize = min(max(defaults.object(forKey: Keys.fontSize) as? Double ?? 14, 10), 28)
         lineSpacing = min(max(defaults.object(forKey: Keys.lineSpacing) as? Double ?? 4, 0), 12)
+        letterSpacing = min(max(defaults.object(forKey: Keys.letterSpacing) as? Double ?? 0, -0.5), 2)
+        fontFamily = ReaderFontFamily(rawValue: defaults.string(forKey: Keys.fontFamily) ?? "") ?? .rounded
+        fontWeight = ReaderFontWeight(rawValue: defaults.string(forKey: Keys.fontWeight) ?? "") ?? .regular
         backgroundOpacity = min(max(defaults.object(forKey: Keys.backgroundOpacity) as? Double ?? 0.94, 0), 1)
         textColor = ReaderPresentationSettings.textColor(in: self.presentationDefaults)
         textOpacity = ReaderPresentationSettings.textOpacity(in: self.presentationDefaults)
@@ -253,7 +335,8 @@ final class StealthReaderViewModel: ObservableObject {
             text: fullText,
             start: offset,
             maximumWidth: singleLineMaximumWidth ?? .greatestFiniteMagnitude,
-            font: font
+            font: font,
+            letterSpacing: letterSpacing
         ).measuredWidth
     }
 
@@ -376,9 +459,8 @@ final class StealthReaderViewModel: ObservableObject {
 
     func fitSingleLinePage(maximumTextWidth: CGFloat, monospaced: Bool) {
         let width = max(maximumTextWidth, 120)
-        let font: NSFont = monospaced
-            ? .monospacedSystemFont(ofSize: fontSize, weight: .regular)
-            : .systemFont(ofSize: fontSize, weight: .regular)
+        let family = monospaced ? ReaderFontFamily.monospaced : fontFamily
+        let font = readerFont(family: family)
         guard singleLineMaximumWidth != width || singleLineFont != font else { return }
         singleLineMaximumWidth = width
         singleLineFont = font
@@ -425,6 +507,7 @@ final class StealthReaderViewModel: ObservableObject {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, fullText.length > 0 else {
             searchResultText = ""
+            searchContext = ""
             return
         }
         let searchRange = NSRange(location: min(offset + 1, fullText.length), length: max(0, fullText.length - min(offset + 1, fullText.length)))
@@ -434,8 +517,16 @@ final class StealthReaderViewModel: ObservableObject {
             : firstPass
         guard found.location != NSNotFound else {
             searchResultText = String(localized: "No matches")
+            searchContext = ""
             return
         }
+        let contextStart = max(0, found.location - 24)
+        let contextEnd = min(fullText.length, found.location + found.length + 32)
+        let contextRange = fullText.rangeOfComposedCharacterSequences(
+            for: NSRange(location: contextStart, length: contextEnd - contextStart)
+        )
+        searchContext = fullText.substring(with: contextRange)
+            .replacingOccurrences(of: "\n", with: " ")
         let direction: FloatingReaderPageDirection = found.location >= offset ? .forward : .backward
         offset = found.location
         previousPageOffsets.removeAll()
@@ -509,7 +600,13 @@ final class StealthReaderViewModel: ObservableObject {
         offset = min(max(offset, 0), fullText.length - 1)
         let safeRange: NSRange
         if let width = singleLineMaximumWidth, let font = singleLineFont {
-            let layout = FloatingReaderPaginator.singleLineLayout(text: fullText, start: offset, maximumWidth: width, font: font)
+            let layout = FloatingReaderPaginator.singleLineLayout(
+                text: fullText,
+                start: offset,
+                maximumWidth: width,
+                font: font,
+                letterSpacing: letterSpacing
+            )
             safeRange = layout.range
             nextPageOffset = layout.nextOffset
         } else {
@@ -520,11 +617,15 @@ final class StealthReaderViewModel: ObservableObject {
                 : nil
         }
         pageText = fullText.substring(with: safeRange)
-        let effectivePageLength = max(safeRange.length - (singleLineMaximumWidth == nil ? 0 : FloatingReaderPaginator.contextOverlap), 1)
+        let effectivePageLength = max(safeRange.length, 1)
         let pageCount = max(1, Int(ceil(Double(fullText.length) / Double(effectivePageLength))))
         let currentPage = min(pageCount, offset / effectivePageLength + 1)
         progressText = String(format: String(localized: "Record %lld of %lld"), currentPage, pageCount)
-        progressFraction = pageCount == 1 ? 1 : Double(currentPage - 1) / Double(pageCount - 1)
+        progressFraction = fullText.length <= 1
+            ? 1
+            : Double(offset) / Double(fullText.length - 1)
+        let chapter = chapters.last(where: { $0.offset <= offset })?.title ?? "正文"
+        progressDetailText = "\(chapter) · \(String(format: "%.1f", progressFraction * 100))%"
         isCurrentLocationBookmarked = bookmarks.contains { $0.locator == currentLocator }
         if animated {
             pageDirection = direction
@@ -557,5 +658,20 @@ final class StealthReaderViewModel: ObservableObject {
     private func span(containing position: Int) -> BlockSpan? {
         spans.first(where: { $0.range.contains(position) })
             ?? spans.last(where: { $0.range.lowerBound <= position })
+    }
+
+    private func readerFont(family: ReaderFontFamily) -> NSFont {
+        switch family {
+        case .monospaced:
+            .monospacedSystemFont(ofSize: fontSize, weight: fontWeight.appKitWeight)
+        case .serif:
+            NSFont(descriptor: NSFont.systemFont(ofSize: fontSize).fontDescriptor.withDesign(.serif) ?? NSFont.systemFont(ofSize: fontSize).fontDescriptor, size: fontSize)
+                ?? .systemFont(ofSize: fontSize, weight: fontWeight.appKitWeight)
+        case .rounded:
+            NSFont(descriptor: NSFont.systemFont(ofSize: fontSize).fontDescriptor.withDesign(.rounded) ?? NSFont.systemFont(ofSize: fontSize).fontDescriptor, size: fontSize)
+                ?? .systemFont(ofSize: fontSize, weight: fontWeight.appKitWeight)
+        case .system:
+            .systemFont(ofSize: fontSize, weight: fontWeight.appKitWeight)
+        }
     }
 }
