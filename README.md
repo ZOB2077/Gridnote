@@ -2,7 +2,7 @@
   <img src="Gridnote/Assets.xcassets/AppIcon.appiconset/icon_512x512.png" width="128" alt="Gridnote icon">
   <h1>Gridnote</h1>
   <p><strong>把本地阅读放进一张看起来正在工作的表格里。</strong></p>
-  <p>原生 macOS · TXT / EPUB · 办公伪装 · 悬浮阅读 · 完全本地</p>
+  <p>原生 macOS · TXT / EPUB · 摸鱼阅读 · 悬浮阅读 · 完全本地</p>
 
   [![Release](https://img.shields.io/github/v/release/ZOB2077/Gridnote?display_name=tag&style=flat-square)](https://github.com/ZOB2077/Gridnote/releases/latest)
   [![macOS CI](https://img.shields.io/github/actions/workflow/status/ZOB2077/Gridnote/ci.yml?branch=main&style=flat-square&label=build)](https://github.com/ZOB2077/Gridnote/actions/workflows/ci.yml)
@@ -18,14 +18,15 @@
 
 ## 为什么是 Gridnote
 
-Gridnote 不尝试成为另一款电子书书城，也不复制完整 Excel。它只专注两件事：让本地小说快速、舒适地阅读，并让阅读窗口在桌面上保持低干扰。
+这是一个vibe项目，Gridnote 不尝试成为另一款电子书书城，也不复制完整 Excel。它只专注两件事：让本地小说快速、舒适地阅读，并让阅读窗口在桌面上保持低干扰。
+希望在消磨生命的工作中，还能找到一点乐趣。
 
 | 能力 | 体验 |
 | --- | --- |
-| 办公伪装 | 原创电子表格式工作区，使用全合成手机租赁演示数据；正文位于顶部公式栏，不进入表格单元格。 |
+| 办公伪装 | 电子表格式工作区，使用全合成手机演示数据；正文位于顶部公式栏，不进入表格单元格。 |
 | 悬浮阅读 | 可调尺寸、背景透明度、文字颜色、字号、行距和阅读进度。 |
 | 超级隐蔽 | 去除背景、边框和组件，仅显示正文；支持单行范围和最大宽度。 |
-| 本地优先 | 书籍、书签、进度、别名和设置仅保存在 Mac，不需要账号或网络。 |
+| 本地优先 | 书籍、书签、进度、别名和设置仅保存在 Mac 本地，不需要账号或网络。 |
 | 多格式 | 支持 TXT 与无 DRM EPUB；TXT 支持 UTF-8、UTF-16、GB18030 等常见编码。 |
 | 连续进度 | 办公公式栏与悬浮窗共享阅读位置，切换模式后从同一处继续。 |
 
@@ -33,7 +34,7 @@ Gridnote 不尝试成为另一款电子书书城，也不复制完整 Excel。�
 
 ### 1. 办公伪装：在顶部公式栏阅读
 
-应用默认进入数据工作区。表格数据是确定性生成的合成记录，不包含真实客户、订单或经营数据。顶部公式栏用于显示当前阅读片段，窗口标题不会暴露真实书名。
+应用默认进入数据工作区。表格数据是AI生成的合成记录，不包含真实客户、订单或经营数据。顶部公式栏用于显示当前阅读片段，窗口标题不会暴露真实书名。
 
 > **小说在哪里？** 在表格工具栏下方、`fx` 标记右侧的长编辑栏中。点击书库图标导入书籍后，使用 `F7` 和 `F8` 即可在这里翻页。
 
@@ -91,10 +92,7 @@ Gridnote 不提供完整 Excel 兼容、XLSX 导入导出、公式、宏、联�
 
 - 阅读内容不会上传；应用核心功能离线可用。
 - 内置表格和发布附件均为合成演示数据。
-- 仓库公开前已扫描完整 Git 历史、当前源码和发布附件，未发现密钥、个人路径、联系方式或真实业务记录。
-- 崩溃信息和应用状态不应包含正文；发现安全问题请使用 [私密漏洞报告](SECURITY.md)。
 
-完整审计范围见 [公开前隐私审计](docs/PRIVACY_AUDIT.md)。
 
 ## 从源码构建
 
@@ -138,7 +136,7 @@ Gridnote 使用 [Gridnote Source-Available Non-Commercial License v1.0](LICENSE)
 
 ## 请我喝杯咖啡
 
-如果 Gridnote 对你有帮助，可以通过微信支付自愿支持项目维护。
+如果 Gridnote 对你有帮助，可以通过微信支付自愿支持项目维护，一杯咖啡=拯救牛马一整天。
 
 <p align="center">
   <img src="docs/images/wechat-donation.jpg" width="300" alt="Gridnote 微信赞助码">
