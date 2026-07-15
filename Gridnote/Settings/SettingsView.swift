@@ -3,11 +3,29 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var appState: AppState
 
     @EnvironmentObject private var stealthController: StealthOverlayController
 
-    var body: some View { SettingsContent(context: modelContext, bookID: appState.selectedBookID, stealthController: stealthController) }
+    var body: some View {
+        SettingsContent(context: modelContext, bookID: appState.selectedBookID, stealthController: stealthController)
+            .overlay(alignment: .topTrailing) {
+                Button(action: dismiss.callAsFunction) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .semibold))
+                        .frame(width: 28, height: 28)
+                        .background(.regularMaterial, in: Circle())
+                        .overlay(Circle().stroke(Color.primary.opacity(0.09), lineWidth: 0.5))
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+                .help("关闭设置")
+                .accessibilityLabel("关闭设置")
+                .accessibilityIdentifier("close-settings")
+                .padding(16)
+            }
+    }
 }
 
 private struct SettingsContent: View {
