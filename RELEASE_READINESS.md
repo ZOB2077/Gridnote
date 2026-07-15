@@ -1,4 +1,4 @@
-# Gridnote MVP Release Readiness
+# Gridnote v1.0 Release Readiness
 
 Date: 2026-07-13
 
@@ -42,4 +42,4 @@ The workspace transition measurement covers the synchronous state path. Manual i
 
 ## Release Decision
 
-All twelve baseline tasks and the subsequent office/floating-reader refinements are complete. The repository is ready as a development MVP and personal-Mac preview build. Developer ID signing, notarization, sandbox entitlement verification, and App Store packaging remain separate release-engineering work.
+The verified v0.1.8 application baseline is approved as Gridnote v1.0.0 for personal Mac use. The public-release audit found no secrets, personal data, or real business records in the reachable Git history or release assets. Developer ID signing, notarization, sandbox entitlement verification, and App Store packaging remain separate release-engineering work.

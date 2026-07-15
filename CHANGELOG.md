@@ -2,6 +2,15 @@
 
 All notable changes are documented in this file. Gridnote follows [Semantic Versioning](https://semver.org/) for public releases where practical.
 
+## [1.0.0] - 2026-07-15
+
+### Release
+
+- Promoted the verified personal-Mac build to the first stable release.
+- Added a public project presentation with a privacy-safe product demonstration, installation guide, shortcut reference, privacy boundary, and commercial-license summary.
+- Completed a full-history and release-asset privacy audit before making the repository public.
+- No application behavior changed from the verified v0.1.8 code baseline.
+
 ## [0.1.8] - 2026-07-15
 
 ### Added
@@ -122,3 +131,4 @@ All notable changes are documented in this file. Gridnote follows [Semantic Vers
 [0.1.6]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.6
 [0.1.7]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.7
 [0.1.8]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.8
+[1.0.0]: https://github.com/ZOB2077/Gridnote/releases/tag/v1.0.0

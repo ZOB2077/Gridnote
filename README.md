@@ -1,49 +1,92 @@
-# Gridnote
+<div align="center">
+  <img src="Gridnote/Assets.xcassets/AppIcon.appiconset/icon_512x512.png" width="128" alt="Gridnote icon">
+  <h1>Gridnote</h1>
+  <p><strong>把本地阅读放进一张看起来正在工作的表格里。</strong></p>
+  <p>原生 macOS · TXT / EPUB · 办公伪装 · 悬浮阅读 · 完全本地</p>
 
-[![macOS CI](https://github.com/ZOB2077/Gridnote/actions/workflows/ci.yml/badge.svg)](https://github.com/ZOB2077/Gridnote/actions/workflows/ci.yml)
-![Platform](https://img.shields.io/badge/platform-macOS%2026%2B-111111)
-![Swift](https://img.shields.io/badge/Swift-6.0-F05138)
-![License](https://img.shields.io/badge/license-source--available%20non--commercial-2F855A)
+  [![Release](https://img.shields.io/github/v/release/ZOB2077/Gridnote?display_name=tag&style=flat-square)](https://github.com/ZOB2077/Gridnote/releases/latest)
+  [![macOS CI](https://img.shields.io/github/actions/workflow/status/ZOB2077/Gridnote/ci.yml?branch=main&style=flat-square&label=build)](https://github.com/ZOB2077/Gridnote/actions/workflows/ci.yml)
+  ![macOS](https://img.shields.io/badge/macOS-26%2B-111111?style=flat-square&logo=apple)
+  ![Swift](https://img.shields.io/badge/Swift-6.0-F05138?style=flat-square&logo=swift&logoColor=white)
+  [![License](https://img.shields.io/badge/license-source--available%20non--commercial-2F855A?style=flat-square)](LICENSE)
+</div>
 
-> A local-first macOS reader with an original office-workspace presentation and a privacy-focused floating reader.
+> [!IMPORTANT]
+> Gridnote 是源码可见的非商业项目，不是 OSI 定义的开源软件。个人、教育和研究用途可依许可使用；商业分发、付费服务、白标和其他获利用途需要单独授权。
 
-Gridnote keeps books, reading progress, aliases, bookmarks, and settings on the Mac. Its primary workspace resembles a compact data workbook populated exclusively with synthetic demo records, while the floating reader provides a minimal, resizable reading surface for short sessions. It is designed for personal reading, not as an Excel replacement or a content distribution service.
+![Gridnote office workspace](docs/images/office-workspace.jpg)
 
-**Status:** `v0.1.8` personal-Mac preview. The application is functional and packaged for personal use without notarization.
+## 为什么是 Gridnote
 
-## Highlights
+Gridnote 不尝试成为另一款电子书书城，也不复制完整 Excel。它只专注两件事：让本地小说快速、舒适地阅读，并让阅读窗口在桌面上保持低干扰。
 
-- Local TXT and non-DRM EPUB import. TXT decoding supports UTF-8, UTF-16, GB18030, and common fallback encodings.
-- Persistent reading location, full-text search, bookmarks, chapter navigation, and per-book aliases.
-- A dense, original office workspace containing synthetic demo data, with novel excerpts shown in the formula bar rather than the grid.
-- Floating reader with page-based layout, transparency controls, precise reading progress, typography controls, and an optional borderless Super Stealth mode.
-- Bidirectional progress sync: navigating in the office formula bar or floating reader continues from the same location.
-- Configurable shortcut profile. Defaults are `F7` previous, `F8` next, and `F9` show or hide the floating reader.
-- No accounts, networking, analytics, cloud sync, DRM removal, or online catalog.
+| 能力 | 体验 |
+| --- | --- |
+| 办公伪装 | 原创电子表格式工作区，使用全合成手机租赁演示数据；正文位于顶部公式栏，不进入表格单元格。 |
+| 悬浮阅读 | 可调尺寸、背景透明度、文字颜色、字号、行距和阅读进度。 |
+| 超级隐蔽 | 去除背景、边框和组件，仅显示正文；支持单行范围和最大宽度。 |
+| 本地优先 | 书籍、书签、进度、别名和设置仅保存在 Mac，不需要账号或网络。 |
+| 多格式 | 支持 TXT 与无 DRM EPUB；TXT 支持 UTF-8、UTF-16、GB18030 等常见编码。 |
+| 连续进度 | 办公公式栏与悬浮窗共享阅读位置，切换模式后从同一处继续。 |
 
-## Requirements
+## 功能演示
 
-- macOS 26 or later.
-- Apple Silicon is the currently packaged release architecture.
-- Xcode 26 or later. Local release verification currently uses Xcode 27 beta.
+### 1. 像工作簿一样启动
 
-## Install
+应用默认进入数据工作区。表格数据是确定性生成的合成记录，不包含真实客户、订单或经营数据。顶部公式栏用于显示当前阅读片段，窗口标题不会暴露真实书名。
 
-Download the latest `Gridnote-macOS.dmg` or `Gridnote-macOS.zip` from [Releases](https://github.com/ZOB2077/Gridnote/releases). Move `Gridnote.app` to Applications and open it.
+### 2. 用全局快捷键控制阅读
 
-The preview build is ad-hoc signed, not notarized. If macOS blocks the first launch, use Finder's **Open** action or allow the app in **System Settings > Privacy & Security**. Do not bypass Gatekeeper for builds from untrusted sources.
+| 快捷键 | 默认行为 |
+| --- | --- |
+| `F7` | 上一页；悬浮窗隐藏且 Gridnote 位于前台时控制公式栏。 |
+| `F8` | 下一页；阅读位置自动保存并同步。 |
+| `F9` | 在任何应用中显示或隐藏悬浮阅读。 |
+| `⌘F` | 在当前可交互阅读界面打开全文搜索。 |
+| `⌘B` | 添加或取消当前位置书签。 |
 
-## Use
+### 3. 按场景切换显示方式
 
-1. Launch Gridnote. The default surface is the office-style data workspace.
-2. Select the library icon and import a TXT or EPUB file.
-3. Open the floating reader from the toolbar or use `F9`.
-4. Navigate with `F7` and `F8`. When the floating reader is hidden, the same shortcuts move the formula-bar excerpt while Gridnote is focused.
-5. Enable Super Stealth mode in settings when only text should be visible. Its display width and height can be adjusted down to a single line.
+- **办公模式**：适合保持完整表格外观，正文显示在顶部编辑区域。
+- **普通悬浮**：适合短时阅读，保留进度、搜索、书签、章节和排版控制。
+- **超级隐蔽**：只保留文字，通过菜单栏和全局快捷键操作。
 
-The office workspace is intentionally limited to presentation and lightweight cell editing. It does not claim XLSX compatibility or implement Excel formulas, macros, or import/export.
+## 安装
 
-## Build From Source
+1. 从 [最新正式版](https://github.com/ZOB2077/Gridnote/releases/latest) 下载 `Gridnote-macOS.dmg` 或 `Gridnote-macOS.zip`。
+2. 将 `Gridnote.app` 移入“应用程序”。
+3. 首次启动若被 macOS 阻止，请在 Finder 中右键选择“打开”，或前往“系统设置 → 隐私与安全性”确认打开。
+
+当前附件为 Apple Silicon 架构，采用 ad-hoc 签名，尚未经过 Apple 公证。不要对来源不明的构建绕过 Gatekeeper。
+
+## 使用
+
+1. 点击工具栏中的书库图标，导入 TXT 或 EPUB。
+2. 在办公公式栏中阅读，或点击悬浮图标打开悬浮阅读。
+3. 使用 `F7`、`F8` 翻页，使用 `F9` 随时显示或隐藏。
+4. 在设置中调整字体、颜色、透明度、失焦保护和超级隐蔽显示范围。
+
+## 格式与边界
+
+| 格式 | 状态 | 说明 |
+| --- | --- | --- |
+| TXT | 支持 | 编码识别、章节识别、搜索、书签和精确进度。 |
+| EPUB | 支持 | 无 DRM EPUB 的正文、元数据、书脊和目录；不还原复杂 CSS。 |
+| PDF | 不支持 | 请先转换为 TXT 或 EPUB。 |
+| DRM 内容 | 不支持 | 不提供移除或绕过 DRM 的能力。 |
+
+Gridnote 不提供完整 Excel 兼容、XLSX 导入导出、公式、宏、联网书城、账号、云同步、遥测、广告、监控检测或系统权限绕过。
+
+## 隐私
+
+- 阅读内容不会上传；应用核心功能离线可用。
+- 内置表格和发布附件均为合成演示数据。
+- 仓库公开前已扫描完整 Git 历史、当前源码和发布附件，未发现密钥、个人路径、联系方式或真实业务记录。
+- 崩溃信息和应用状态不应包含正文；发现安全问题请使用 [私密漏洞报告](SECURITY.md)。
+
+完整审计范围见 [公开前隐私审计](docs/PRIVACY_AUDIT.md)。
+
+## 从源码构建
 
 ```bash
 git clone https://github.com/ZOB2077/Gridnote.git
@@ -51,59 +94,38 @@ cd Gridnote
 open Gridnote.xcodeproj
 ```
 
-Or build from Terminal with the configured Xcode:
-
 ```bash
-DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 xcodebuild -project Gridnote.xcodeproj -scheme Gridnote \
   -destination 'platform=macOS,arch=arm64' build
 ```
 
-Run the unit test suite:
-
 ```bash
-DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer \
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer \
 xcodebuild -project Gridnote.xcodeproj -scheme Gridnote \
   -destination 'platform=macOS' -parallel-testing-enabled NO \
   -skip-testing:GridnoteUITests test
 ```
 
-UI automation is intentionally excluded from the default command because macOS can request local permissions during test launches. See [TEST_PLAN.md](TEST_PLAN.md) for manual verification guidance.
+默认测试命令不运行 UI 自动化，避免 macOS 在测试过程中重复请求本地权限。人工验收范围见 [TEST_PLAN.md](TEST_PLAN.md)。
 
-## Supported Formats
+## 项目文档
 
-| Format | Support | Notes |
-| --- | --- | --- |
-| TXT | Supported | Local text files with encoding detection and chapter heuristics. |
-| EPUB | Supported | Non-DRM EPUB text, metadata, spine, and table of contents. Complex CSS and media are not reproduced. |
-| PDF | Not supported | Convert to TXT or EPUB before import. |
-| DRM-protected books | Not supported | Gridnote does not remove or bypass DRM. |
+- [产品规格](PRODUCT_SPEC.md)
+- [技术架构](ARCHITECTURE.md)
+- [测试计划](TEST_PLAN.md)
+- [版本记录](CHANGELOG.md)
+- [已知限制](KNOWN_LIMITATIONS.md)
+- [贡献指南](CONTRIBUTING.md)
+- [支持与反馈](SUPPORT.md)
+- [安全策略](SECURITY.md)
 
-## Privacy And Safety
+## 许可与商业授权
 
-- Reading content remains local to the Mac.
-- Built-in office tables are deterministic synthetic fixtures and contain no customer or business records.
-- Gridnote does not attempt to bypass macOS protections, device management, screen recording, or monitoring software.
-- The office presentation uses original assets and interaction patterns; it is not affiliated with Microsoft, WPS, or any office-suite vendor.
-- See [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) for technical and distribution limits.
+Gridnote 使用 [Gridnote Source-Available Non-Commercial License v1.0](LICENSE)。允许个人、教育、研究、慈善和其他非商业用途查看、复制、修改和分发源码，但必须保留许可和版权声明。
 
-## Project Documentation
+商业分发、付费产品或服务、广告获利、OEM、白标及托管服务需要版权所有者单独书面授权。商业合作请通过 [ZOB2077](https://github.com/ZOB2077) 联系。
 
-- [Product specification](PRODUCT_SPEC.md)
-- [Architecture](ARCHITECTURE.md)
-- [Test plan](TEST_PLAN.md)
-- [Changelog](CHANGELOG.md)
-- [Release notes](RELEASE_NOTES.md)
-- [Contributing](CONTRIBUTING.md)
-- [Support](SUPPORT.md)
-- [Security policy](SECURITY.md)
+## 致谢
 
-## License And Commercial Use
-
-Gridnote is **source-available**, not OSI open source. The project is licensed under the [Gridnote Source-Available Non-Commercial License v1.0](LICENSE). Personal, educational, research, and other non-commercial use is permitted under its terms.
-
-Commercial distribution, paid services, monetized derivatives, white-label use, and similar commercial use require a separate written agreement. Contact [ZOB2077](https://github.com/ZOB2077) to discuss a commercial license.
-
-## Acknowledgements
-
-The floating-reader feature was designed with reference to the MIT-licensed [StealthReader](https://github.com/mx3353672833-debug/StealthReader-moyu-reader-mac) project. Gridnote uses an independent implementation. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+悬浮阅读功能参考了 MIT 许可项目 [StealthReader](https://github.com/mx3353672833-debug/StealthReader-moyu-reader-mac) 的产品思路，Gridnote 使用独立实现。详情见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
