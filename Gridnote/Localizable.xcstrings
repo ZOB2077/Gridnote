@@ -121,6 +121,7 @@
     "No bookmarks" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "暂无书签" } } } },
     "No matches" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "没有匹配项" } } } },
     "Paragraph %lld of %lld" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "第 %1$lld 段，共 %2$lld 段" } } } },
+    "Result %lld of %lld" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "第 %1$lld / %2$lld 项" } } } },
     "Search" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "搜索" } } } },
     "Search current book" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "搜索当前书籍" } } } },
     "Text color" : { "localizations" : { "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "文字颜色" } } } },

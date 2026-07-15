@@ -10,6 +10,7 @@ struct StealthOverlayView: View {
     @State private var isHovering = false
     @State private var sliderValue = 0.0
     @State private var searchQuery = ""
+    @FocusState private var searchFieldFocused: Bool
 
     var body: some View {
         Group {
@@ -52,7 +53,7 @@ struct StealthOverlayView: View {
         .animation(.easeInOut(duration: 0.16), value: isHovering)
         .onChange(of: viewModel.progressFraction) { _, value in sliderValue = value }
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteStealthSearchRequested)) { _ in
-            showsSearch = true
+            presentSearch()
         }
         .gesture(
             DragGesture(minimumDistance: 10)
@@ -172,7 +173,7 @@ struct StealthOverlayView: View {
             controlButton("chevron.forward", action: viewModel.next)
                 .disabled(!viewModel.canGoNext)
                 .help("Next record")
-            controlButton("magnifyingglass") { showsSearch.toggle() }
+            controlButton("magnifyingglass", action: presentSearch)
                 .help("Search")
             controlButton(viewModel.isCurrentLocationBookmarked ? "bookmark.fill" : "bookmark", action: viewModel.toggleBookmark)
             .help("Toggle bookmark")
@@ -229,28 +230,62 @@ struct StealthOverlayView: View {
     }
 
     private var searchBar: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 9) {
             HStack(spacing: 8) {
-                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                TextField("Search current book", text: $searchQuery)
-                    .textFieldStyle(.plain)
-                    .onSubmit { viewModel.search(for: searchQuery) }
+                Label("全文搜索", systemImage: "magnifyingglass")
+                    .font(.callout.weight(.semibold))
+                Spacer()
                 if !viewModel.searchResultText.isEmpty {
-                    Text(viewModel.searchResultText).font(.caption).foregroundStyle(.secondary)
+                    Text(viewModel.searchResultText)
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
                 }
-                Button("Go") { viewModel.search(for: searchQuery) }.buttonStyle(.bordered)
+                Button(action: dismissSearch) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .help("关闭搜索")
+            }
+            HStack(spacing: 8) {
+                TextField("输入关键词", text: $searchQuery)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($searchFieldFocused)
+                    .onSubmit { viewModel.search(for: searchQuery) }
+                    .onChange(of: searchQuery) { _, value in
+                        if value.isEmpty { viewModel.clearSearch() }
+                    }
+                Button("上一个") { viewModel.searchPrevious(for: searchQuery) }
+                    .disabled(searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                Button("下一个") { viewModel.search(for: searchQuery) }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(searchQuery.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
             if !viewModel.searchContext.isEmpty {
                 Text(viewModel.searchContext)
                     .font(.caption)
                     .lineLimit(2)
                     .foregroundStyle(.secondary)
-                    .padding(.leading, 22)
+                    .padding(.horizontal, 2)
             }
         }
-        .padding(.horizontal, 13)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 11)
         .background(footerColor)
+    }
+
+    private func presentSearch() {
+        showsSearch = true
+        controller.beginTextInput()
+        Task { @MainActor in
+            await Task.yield()
+            searchFieldFocused = true
+        }
+    }
+
+    private func dismissSearch() {
+        searchFieldFocused = false
+        showsSearch = false
     }
 
     private var bookmarkList: some View {

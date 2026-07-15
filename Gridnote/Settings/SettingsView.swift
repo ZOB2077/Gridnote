@@ -224,22 +224,28 @@ private struct SettingsContent: View {
                 Label("实时预览", systemImage: "eye")
                     .font(.caption.weight(.semibold))
                 Spacer()
-                Text("\(Int(stealthController.superStealthDisplaySize.width))–\(Int(stealthController.superStealthDisplaySize.maximumWidth)) px")
+                Text("\(Int(stealthController.superStealthDisplaySize.width)) × \(Int(stealthController.superStealthDisplaySize.height))，最大 \(Int(stealthController.superStealthDisplaySize.maximumWidth)) px")
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
             GeometryReader { proxy in
-                let upperBound = max(SuperStealthDisplaySize.widthRange.upperBound, 1)
-                let widthRatio = min(max(stealthController.superStealthDisplaySize.maximumWidth / upperBound, 0.32), 1)
-                let previewWidth = max(180, proxy.size.width * widthRatio)
-                let heightRatio = min(max(stealthController.superStealthDisplaySize.height / SuperStealthDisplaySize.heightRange.upperBound, 0.32), 1)
-                let previewHeight = max(30, 58 * heightRatio)
+                let size = stealthController.superStealthDisplaySize
+                let availableWidth = max(proxy.size.width - 20, 1)
+                let scale = availableWidth / SuperStealthDisplaySize.widthRange.upperBound
+                let maximumPreviewWidth = max(72, size.maximumWidth * scale)
+                let currentPreviewWidth = min(maximumPreviewWidth, max(72, size.width * scale))
+                let heightRatio = size.height / SuperStealthDisplaySize.heightRange.upperBound
+                let currentPreviewHeight = max(26, min(66, 26 + 40 * heightRatio))
 
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 8, style: .continuous)
                         .fill(Color.primary.opacity(0.025))
+                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                        .stroke(Color.secondary.opacity(0.35), style: StrokeStyle(lineWidth: 1, dash: [5, 4]))
+                        .frame(width: maximumPreviewWidth, height: 66)
+                        .padding(.leading, 10)
                     HStack(spacing: 0) {
-                        Text("项目记录已同步，等待复核。")
+                        Text("项目记录已同步，当前设备租赁清单等待复核。")
                             .font(.system(
                                 size: min(readerViewModel.fontSize, 17),
                                 weight: readerViewModel.fontWeight.swiftUIWeight,
@@ -250,19 +256,26 @@ private struct SettingsContent: View {
                             .fixedSize(horizontal: true, vertical: true)
                         Spacer(minLength: 0)
                     }
-                    .padding(.horizontal, 12)
-                    .frame(width: previewWidth, height: previewHeight, alignment: .leading)
+                    .padding(.horizontal, 10)
+                    .frame(width: currentPreviewWidth, height: currentPreviewHeight, alignment: .leading)
+                    .background(Color(nsColor: .windowBackgroundColor).opacity(readerViewModel.backgroundOpacity), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
                     .clipped()
                     .overlay {
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .stroke(style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
-                            .foregroundStyle(Color.secondary.opacity(0.28))
+                            .stroke(Color.accentColor.opacity(0.75), lineWidth: 1.5)
                     }
-                    .padding(8)
+                    .padding(.leading, 10)
                 }
             }
-            .frame(height: 76)
-            helpText("虚线范围模拟纯文字窗口；调整宽度、高度、字体和透明度时会立即更新。")
+            .frame(height: 78)
+            HStack(spacing: 14) {
+                Label("当前显示范围", systemImage: "rectangle")
+                    .foregroundStyle(Color.accentColor)
+                Label("最大扩展范围", systemImage: "rectangle.dashed")
+                    .foregroundStyle(.secondary)
+            }
+            .font(.caption2)
+            helpText("实线范围随最小宽度和高度变化，虚线范围随最大宽度变化；字体、颜色及透明度同步预览。")
         }
         .padding(12)
         .background(Color.primary.opacity(0.025), in: RoundedRectangle(cornerRadius: 10, style: .continuous))

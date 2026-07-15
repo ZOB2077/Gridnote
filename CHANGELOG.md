@@ -2,6 +2,18 @@
 
 All notable changes are documented in this file. Gridnote follows [Semantic Versioning](https://semver.org/) for public releases where practical.
 
+## [0.1.8] - 2026-07-15
+
+### Added
+
+- Added a focused full-book search bar with previous/next navigation, match count, context preview, and an explicit close control.
+
+### Fixed
+
+- Fixed keyboard input in floating search by allowing the panel to become key only when text entry is requested.
+- Fixed reader shortcuts intercepting cursor keys while the search field is active.
+- Reworked the Super Stealth live preview so minimum width, maximum width, height, typography, color, and opacity changes are visibly distinct.
+
 ## [0.1.7] - 2026-07-15
 
 ### Added
@@ -109,3 +121,4 @@ All notable changes are documented in this file. Gridnote follows [Semantic Vers
 [0.1.5]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.5
 [0.1.6]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.6
 [0.1.7]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.7
+[0.1.8]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.8

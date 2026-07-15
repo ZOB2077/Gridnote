@@ -50,6 +50,32 @@ final class StealthReaderViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.searchContext.contains("BBBB"))
     }
 
+    func testSearchReportsPositionAndAdvancesThroughEveryMatch() async throws {
+        let sourceURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("gridnote-search-\(UUID().uuidString).txt")
+        try Data("序言。目标甲。中段。目标乙。结尾。目标丙。".utf8).write(to: sourceURL)
+        defer { try? FileManager.default.removeItem(at: sourceURL) }
+
+        let suiteName = "gridnote-search-tests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+        let container = try GridnoteModelContainer.make(inMemory: true)
+        let context = ModelContext(container)
+        let book = try BookRepository(context: context).insert(
+            metadata: .init(title: "Search Fixture", sourceFilename: sourceURL.lastPathComponent),
+            sourcePath: sourceURL.path,
+            format: .txt
+        )
+        let viewModel = StealthReaderViewModel(context: context, defaults: defaults)
+
+        await viewModel.load(bookID: book.id)
+        viewModel.search(for: "目标")
+        XCTAssertEqual(viewModel.searchResultText, "第 1 / 3 项")
+
+        viewModel.search(for: "目标")
+        XCTAssertEqual(viewModel.searchResultText, "第 2 / 3 项")
+    }
+
     func testSynchronizesExternalOfficeProgressWithoutWritingItBack() async throws {
         let sourceURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("gridnote-progress-sync-\(UUID().uuidString).txt")

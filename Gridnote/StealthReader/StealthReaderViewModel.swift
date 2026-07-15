@@ -304,6 +304,9 @@ final class StealthReaderViewModel: ObservableObject {
     private var singleLineFont: NSFont?
     private var bookID: UUID?
     private var isReloadingPresentation = false
+    private var searchMatches: [NSRange] = []
+    private var selectedSearchMatchIndex: Int?
+    private var activeSearchQuery = ""
 
     init(
         context: ModelContext,
@@ -353,6 +356,7 @@ final class StealthReaderViewModel: ObservableObject {
     func load(bookID requestedBookID: UUID?) async {
         state = .loading
         chapters = []
+        clearSearch()
         pageText = String(localized: "Refreshing workspace details...")
         progressText = String(localized: "Preparing")
         progressFraction = 0
@@ -507,22 +511,51 @@ final class StealthReaderViewModel: ObservableObject {
     }
 
     func search(for query: String) {
+        navigateSearch(for: query, direction: 1)
+    }
+
+    func searchPrevious(for query: String) {
+        navigateSearch(for: query, direction: -1)
+    }
+
+    func clearSearch() {
+        activeSearchQuery = ""
+        searchMatches = []
+        selectedSearchMatchIndex = nil
+        searchResultText = ""
+        searchContext = ""
+    }
+
+    private func navigateSearch(for query: String, direction: Int) {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty, fullText.length > 0 else {
-            searchResultText = ""
-            searchContext = ""
+            clearSearch()
             return
         }
-        let searchRange = NSRange(location: min(offset + 1, fullText.length), length: max(0, fullText.length - min(offset + 1, fullText.length)))
-        let firstPass = fullText.range(of: trimmed, options: [.caseInsensitive, .diacriticInsensitive], range: searchRange)
-        let found = firstPass.location == NSNotFound
-            ? fullText.range(of: trimmed, options: [.caseInsensitive, .diacriticInsensitive], range: NSRange(location: 0, length: fullText.length))
-            : firstPass
-        guard found.location != NSNotFound else {
+
+        if activeSearchQuery.compare(trimmed, options: [.caseInsensitive, .diacriticInsensitive]) != .orderedSame {
+            activeSearchQuery = trimmed
+            searchMatches = ranges(matching: trimmed)
+            selectedSearchMatchIndex = nil
+        }
+
+        guard !searchMatches.isEmpty else {
             searchResultText = String(localized: "No matches")
             searchContext = ""
             return
         }
+
+        let selectedIndex: Int
+        if let currentIndex = selectedSearchMatchIndex {
+            selectedIndex = (currentIndex + direction + searchMatches.count) % searchMatches.count
+        } else if direction > 0 {
+            selectedIndex = searchMatches.firstIndex(where: { $0.location >= offset }) ?? 0
+        } else {
+            selectedIndex = searchMatches.lastIndex(where: { $0.location < offset }) ?? (searchMatches.count - 1)
+        }
+        selectedSearchMatchIndex = selectedIndex
+        let found = searchMatches[selectedIndex]
+
         let contextStart = max(0, found.location - 24)
         let contextEnd = min(fullText.length, found.location + found.length + 32)
         let contextRange = fullText.rangeOfComposedCharacterSequences(
@@ -535,7 +568,24 @@ final class StealthReaderViewModel: ObservableObject {
         previousPageOffsets.removeAll()
         refreshPage(animated: true, direction: direction)
         saveProgress()
-        searchResultText = String(localized: "Match found")
+        searchResultText = String(
+            format: String(localized: "Result %lld of %lld"),
+            Int64(selectedIndex + 1),
+            Int64(searchMatches.count)
+        )
+    }
+
+    private func ranges(matching query: String) -> [NSRange] {
+        var matches: [NSRange] = []
+        var searchLocation = 0
+        while searchLocation < fullText.length {
+            let range = NSRange(location: searchLocation, length: fullText.length - searchLocation)
+            let match = fullText.range(of: query, options: [.caseInsensitive, .diacriticInsensitive], range: range)
+            guard match.location != NSNotFound, match.length > 0 else { break }
+            matches.append(match)
+            searchLocation = match.location + match.length
+        }
+        return matches
     }
 
     func syncProgressFromOffice(bookID updatedBookID: UUID) {

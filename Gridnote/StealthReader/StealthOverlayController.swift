@@ -3,6 +3,11 @@ import Carbon.HIToolbox
 import SwiftData
 import SwiftUI
 
+private final class InteractiveStealthPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { false }
+}
+
 enum StealthShortcutAction: Int, CaseIterable, Identifiable {
     case previous = 1
     case next = 2
@@ -245,6 +250,13 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
         NotificationCenter.default.post(name: .gridnotePrivacyShieldRequested, object: nil)
     }
 
+    func beginTextInput() {
+        guard let panel else { return }
+        focusHideTask?.cancel()
+        NSApp.activate(ignoringOtherApps: true)
+        panel.makeKeyAndOrderFront(nil)
+    }
+
     func next() { viewModel.next() }
     func previous() { viewModel.previous() }
 
@@ -346,6 +358,9 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
             NotificationCenter.default.post(name: .gridnoteStealthSearchRequested, object: nil)
             return true
         }
+        if panel?.firstResponder is NSTextView {
+            return false
+        }
         if modifiers == [.command], event.charactersIgnoringModifiers?.lowercased() == "b" {
             viewModel.toggleBookmark()
             return true
@@ -376,7 +391,7 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
     }
 
     private func makePanel() -> NSPanel {
-        let panel = NSPanel(
+        let panel = InteractiveStealthPanel(
             contentRect: NSRect(x: 0, y: 0, width: 760, height: 230),
             styleMask: [.nonactivatingPanel, .borderless, .resizable],
             backing: .buffered,
