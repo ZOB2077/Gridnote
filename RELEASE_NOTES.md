@@ -2,7 +2,25 @@
 
 Gridnote v1.0.0 is the first stable personal-Mac release. It promotes the verified v0.1.8 application baseline without adding untested behavior.
 
+## 功能预览
+
+### 办公伪装：小说在顶部公式栏
+
+启动后默认显示电子表格式工作区。小说位于工具栏下方、`fx` 标记右侧的长编辑栏，不会写入表格单元格；按 `F7`、`F8` 可直接翻页。
+
 ![Gridnote office workspace](https://raw.githubusercontent.com/ZOB2077/Gridnote/main/docs/images/office-workspace.jpg)
+
+### 普通悬浮阅读
+
+悬浮窗显示正文、书名与精确进度，并提供搜索、书签、章节和排版入口。它与办公公式栏使用同一阅读位置。
+
+![Gridnote floating reader](https://raw.githubusercontent.com/ZOB2077/Gridnote/main/docs/images/floating-reader.png)
+
+### 超级隐蔽模式
+
+超级隐蔽模式移除背景、边框和控制组件，只保留正文。下图中的灰色小说文本是覆盖在日常窗口上的无边框阅读层。
+
+![Gridnote Super Stealth mode](https://raw.githubusercontent.com/ZOB2077/Gridnote/main/docs/images/super-stealth.png)
 
 ## 核心体验
 
@@ -34,3 +52,13 @@ Gridnote v1.0.0 is the first stable personal-Mac release. It promotes the verifi
 ## 许可
 
 源码依据 Gridnote Source-Available Non-Commercial License v1.0 公开。个人、教育、研究和其他非商业用途按许可开放；商业分发、付费服务、OEM、白标和其他获利用途需要单独书面授权。
+
+## 支持开发
+
+如果 Gridnote 对你有帮助，可以通过微信支付自愿请作者喝杯咖啡。
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/ZOB2077/Gridnote/main/docs/images/wechat-donation.jpg" width="300" alt="Gridnote 微信赞助码">
+</p>
+
+捐赠不构成商业授权、付费服务、功能承诺或优先支持。
