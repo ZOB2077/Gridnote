@@ -5,7 +5,7 @@ struct StealthMenuBarView: View {
     @EnvironmentObject private var stealthController: StealthOverlayController
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 13) {
             header
             progressCard
             primaryControls
@@ -27,8 +27,8 @@ struct StealthMenuBarView: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(16)
-        .frame(width: 330)
+        .padding(15)
+        .frame(width: 320)
     }
 
     private var header: some View {
@@ -43,15 +43,18 @@ struct StealthMenuBarView: View {
             .frame(width: 34, height: 34)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("阅读控制中心").font(.headline)
-                Text(stealthController.superStealthMode ? "超级隐蔽模式已开启" : "悬浮阅读待命")
+                Text("工作区控制").font(.headline)
+                Text(stealthController.superStealthMode ? "精简显示已开启" : "记录面板待命")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Circle()
-                .fill(stealthController.superStealthMode ? Color.green : Color.secondary.opacity(0.45))
-                .frame(width: 8, height: 8)
+            Text("本地")
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 4)
+                .background(Color.primary.opacity(0.05), in: Capsule())
         }
     }
 
@@ -103,7 +106,7 @@ struct StealthMenuBarView: View {
     }
 
     private var stealthStatus: some View {
-        Label("纯文字显示，边框与组件已隐藏", systemImage: "eye.slash.fill")
+        Label("精简显示中，边框与组件已隐藏", systemImage: "rectangle.dashed")
             .font(.caption)
             .foregroundStyle(.secondary)
             .padding(.horizontal, 2)

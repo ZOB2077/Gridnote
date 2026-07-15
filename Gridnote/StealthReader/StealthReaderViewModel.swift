@@ -165,8 +165,65 @@ enum FloatingReaderPaginator {
         return .init(range: range, measuredWidth: width, nextOffset: nextOffset)
     }
 
-    private static func semanticLength(in text: NSString, range: NSRange) -> Int? {
-        let minimumLength = max(8, Int(Double(range.length) * 0.62))
+    static func multiLineLayout(
+        text: NSString,
+        start: Int,
+        maximumSize: CGSize,
+        font: NSFont,
+        lineSpacing: CGFloat,
+        letterSpacing: CGFloat = 0
+    ) -> FloatingReaderPageLayout {
+        guard text.length > 0 else {
+            return .init(range: NSRange(location: 0, length: 0), measuredWidth: 0, nextOffset: nil)
+        }
+        let safeStart = min(max(start, 0), text.length - 1)
+        let remaining = text.length - safeStart
+        let safeSize = CGSize(width: max(maximumSize.width, 80), height: max(maximumSize.height, font.pointSize + 4))
+        var low = 1
+        var high = remaining
+        var fittedLength = 1
+
+        while low <= high {
+            let middle = (low + high) / 2
+            let candidate = text.rangeOfComposedCharacterSequences(for: NSRange(location: safeStart, length: middle))
+            if measuredSize(
+                of: text,
+                range: candidate,
+                width: safeSize.width,
+                font: font,
+                lineSpacing: lineSpacing,
+                letterSpacing: letterSpacing
+            ).height <= safeSize.height {
+                fittedLength = candidate.length
+                low = middle + 1
+            } else {
+                high = middle - 1
+            }
+        }
+
+        var range = text.rangeOfComposedCharacterSequences(for: NSRange(location: safeStart, length: fittedLength))
+        if range.location + range.length < text.length,
+           let semanticLength = semanticLength(in: text, range: range, minimumRatio: 0.84) {
+            range.length = semanticLength
+        }
+        let measured = measuredSize(
+            of: text,
+            range: range,
+            width: safeSize.width,
+            font: font,
+            lineSpacing: lineSpacing,
+            letterSpacing: letterSpacing
+        )
+        let end = range.location + range.length
+        return .init(
+            range: range,
+            measuredWidth: measured.width,
+            nextOffset: end < text.length ? end : nil
+        )
+    }
+
+    private static func semanticLength(in text: NSString, range: NSRange, minimumRatio: Double = 0.62) -> Int? {
+        let minimumLength = max(8, Int(Double(range.length) * minimumRatio))
         guard range.length > minimumLength else { return nil }
         for index in stride(from: range.location + range.length - 1, through: range.location + minimumLength - 1, by: -1) {
             let scalar = UnicodeScalar(text.character(at: index))
@@ -181,6 +238,28 @@ enum FloatingReaderPaginator {
             .replacingOccurrences(of: "\n", with: " ")
             .replacingOccurrences(of: "\r", with: " ")
         return ceil(NSAttributedString(string: display, attributes: [.font: font, .kern: letterSpacing]).size().width)
+    }
+
+    private static func measuredSize(
+        of text: NSString,
+        range: NSRange,
+        width: CGFloat,
+        font: NSFont,
+        lineSpacing: CGFloat,
+        letterSpacing: CGFloat
+    ) -> CGSize {
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineSpacing = lineSpacing
+        paragraph.lineBreakMode = .byWordWrapping
+        let attributed = NSAttributedString(
+            string: text.substring(with: range),
+            attributes: [.font: font, .kern: letterSpacing, .paragraphStyle: paragraph]
+        )
+        let bounds = attributed.boundingRect(
+            with: CGSize(width: width, height: .greatestFiniteMagnitude),
+            options: [.usesLineFragmentOrigin, .usesFontLeading]
+        )
+        return CGSize(width: ceil(bounds.width), height: ceil(bounds.height))
     }
 
 }
@@ -216,7 +295,10 @@ final class StealthReaderViewModel: ObservableObject {
         didSet { defaults.set(fontSize, forKey: Keys.fontSize) }
     }
     @Published var lineSpacing: Double {
-        didSet { defaults.set(lineSpacing, forKey: Keys.lineSpacing) }
+        didSet {
+            defaults.set(lineSpacing, forKey: Keys.lineSpacing)
+            refreshPage()
+        }
     }
     @Published var letterSpacing: Double {
         didSet {
@@ -299,6 +381,8 @@ final class StealthReaderViewModel: ObservableObject {
     private var previousPageOffsets: [Int] = []
     private var singleLineMaximumWidth: CGFloat?
     private var singleLineFont: NSFont?
+    private var multiLineMaximumSize: CGSize?
+    private var multiLineFont: NSFont?
     private var bookID: UUID?
     private var isReloadingPresentation = false
 
@@ -325,9 +409,7 @@ final class StealthReaderViewModel: ObservableObject {
 
     var canGoPrevious: Bool { offset > 0 }
     var canGoNext: Bool {
-        singleLineMaximumWidth == nil
-            ? offset + charactersPerPage < fullText.length
-            : nextPageOffset != nil
+        nextPageOffset != nil
     }
     var currentPageMeasuredWidth: CGFloat {
         guard let font = singleLineFont else { return 0 }
@@ -438,6 +520,30 @@ final class StealthReaderViewModel: ObservableObject {
         if maximumLines == nil {
             singleLineMaximumWidth = nil
             singleLineFont = nil
+            let usableSize = CGSize(
+                width: max(size.width - 32, 120),
+                height: max(size.height - 28, fontSize + 4)
+            )
+            let estimatedCharacterWidth = max(fontSize * 0.68, 7)
+            let estimatedLineHeight = max(fontSize + lineSpacing + 7, 16)
+            let estimatedCapacity = min(
+                max(
+                    Int(usableSize.width / estimatedCharacterWidth)
+                        * max(3, Int(usableSize.height / estimatedLineHeight)),
+                    80
+                ),
+                1600
+            )
+            if estimatedCapacity != charactersPerPage {
+                charactersPerPage = estimatedCapacity
+            }
+            let font = readerFont(family: fontFamily)
+            guard multiLineMaximumSize != usableSize || multiLineFont != font else { return }
+            multiLineMaximumSize = usableSize
+            multiLineFont = font
+            previousPageOffsets.removeAll()
+            refreshPage()
+            return
         }
         let usableWidth = max(size.width - 32, 120)
         let usableHeight = max(size.height - (maximumLines == nil ? 26 : 8), 16)
@@ -464,6 +570,8 @@ final class StealthReaderViewModel: ObservableObject {
         guard singleLineMaximumWidth != width || singleLineFont != font else { return }
         singleLineMaximumWidth = width
         singleLineFont = font
+        multiLineMaximumSize = nil
+        multiLineFont = nil
         previousPageOffsets.removeAll()
         refreshPage()
     }
@@ -605,6 +713,17 @@ final class StealthReaderViewModel: ObservableObject {
                 start: offset,
                 maximumWidth: width,
                 font: font,
+                letterSpacing: letterSpacing
+            )
+            safeRange = layout.range
+            nextPageOffset = layout.nextOffset
+        } else if let size = multiLineMaximumSize, let font = multiLineFont {
+            let layout = FloatingReaderPaginator.multiLineLayout(
+                text: fullText,
+                start: offset,
+                maximumSize: size,
+                font: font,
+                lineSpacing: lineSpacing,
                 letterSpacing: letterSpacing
             )
             safeRange = layout.range

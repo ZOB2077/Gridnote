@@ -2,6 +2,19 @@
 
 All notable changes are documented in this file. Gridnote follows [Semantic Versioning](https://semver.org/) for public releases where practical.
 
+## [0.1.4] - 2026-07-15
+
+### Added
+
+- Added pixel-measured multi-line pagination for the normal floating panel, including font, line-spacing, and letter-spacing constraints.
+- Added regression coverage for continuous multi-page CJK text without overlap or dropped characters.
+
+### Changed
+
+- Refined the floating panel into a quieter record-detail surface with reduced chrome and clearer information hierarchy.
+- Reworked the menu-bar controller as a neutral local workspace control instead of an explicit reader dashboard.
+- Reduced persistent visual emphasis on navigation controls while retaining hover access, search, bookmarks, chapters, and exact progress.
+
 ## [0.1.3] - 2026-07-14
 
 ### Added
@@ -65,3 +78,4 @@ All notable changes are documented in this file. Gridnote follows [Semantic Vers
 [0.1.1]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.1
 [0.1.2]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.2
 [0.1.3]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.3
+[0.1.4]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.4

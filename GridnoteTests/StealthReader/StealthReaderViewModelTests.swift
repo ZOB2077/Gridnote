@@ -5,6 +5,33 @@ import XCTest
 
 @MainActor
 final class StealthReaderViewModelTests: XCTestCase {
+    func testMultiLinePaginatorFitsBoundsAndContinuesWithoutOverlap() {
+        let text = NSString(string: String(repeating: "这是一段用于验证多行像素分页的内容，阅读应当连续且没有截断。", count: 30))
+        let font = NSFont.systemFont(ofSize: 14)
+        var offset = 0
+        var ranges: [NSRange] = []
+
+        while offset < text.length {
+            let layout = FloatingReaderPaginator.multiLineLayout(
+                text: text,
+                start: offset,
+                maximumSize: CGSize(width: 260, height: 120),
+                font: font,
+                lineSpacing: 4
+            )
+            XCTAssertGreaterThan(layout.range.length, 0)
+            XCTAssertEqual(layout.range.location, offset)
+            ranges.append(layout.range)
+            guard let next = layout.nextOffset else { break }
+            XCTAssertEqual(next, layout.range.location + layout.range.length)
+            offset = next
+        }
+
+        XCTAssertEqual(ranges.first?.location, 0)
+        XCTAssertEqual(ranges.reduce(0) { $0 + $1.length }, text.length)
+        XCTAssertEqual(ranges.last.map { $0.location + $0.length }, text.length)
+    }
+
     func testPaginatesTextAndPersistsPreciseProgress() async throws {
         let sourceURL = FileManager.default.temporaryDirectory
             .appendingPathComponent("gridnote-stealth-\(UUID().uuidString).txt")

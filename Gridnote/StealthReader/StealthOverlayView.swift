@@ -19,7 +19,7 @@ struct StealthOverlayView: View {
                 VStack(spacing: 0) {
                     header
                     if showsSearch { searchBar }
-                    Divider().opacity(0.6)
+                    Divider().opacity(0.42)
                     content
                     footer
                 }
@@ -47,7 +47,7 @@ struct StealthOverlayView: View {
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        .shadow(color: .black.opacity(controller.superStealthMode ? 0 : 0.18), radius: 18, y: 7)
+        .shadow(color: .black.opacity(controller.superStealthMode ? 0 : 0.14), radius: 20, y: 8)
         .onHover { isHovering = $0 }
         .animation(.easeInOut(duration: 0.16), value: isHovering)
         .onChange(of: viewModel.progressFraction) { _, value in sliderValue = value }
@@ -66,10 +66,11 @@ struct StealthOverlayView: View {
 
     private var header: some View {
         HStack(spacing: 9) {
-            Circle()
-                .fill(statusColor)
-                .frame(width: 7, height: 7)
-                .shadow(color: statusColor.opacity(0.5), radius: 3)
+            Image(systemName: headerIcon)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(statusColor)
+                .frame(width: 20, height: 20)
+                .background(statusColor.opacity(0.09), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
             VStack(alignment: .leading, spacing: 1) {
                 Text(headerTitle)
                     .font(.system(size: 11, weight: .semibold, design: headerDesign))
@@ -78,15 +79,15 @@ struct StealthOverlayView: View {
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Text("LOCAL")
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
+            Text("已同步")
+                .font(.system(size: 9, weight: .medium, design: headerDesign))
                 .padding(.horizontal, 6)
                 .padding(.vertical, 3)
-                .background(statusColor.opacity(0.12), in: Capsule())
-                .foregroundStyle(statusColor)
+                .background(Color.primary.opacity(0.045), in: Capsule())
+                .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 13)
-        .frame(height: 43)
+        .frame(height: 41)
     }
 
     @ViewBuilder
@@ -111,8 +112,8 @@ struct StealthOverlayView: View {
                         .foregroundStyle(viewModel.textColor.opacity(viewModel.textOpacity))
                         .lineLimit(controller.superStealthMode ? 1 : nil)
                         .textSelection(.enabled)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, controller.superStealthMode ? 4 : 13)
+                        .padding(.horizontal, 17)
+                        .padding(.vertical, controller.superStealthMode ? 4 : 15)
                         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                         .transition(pageTransition)
                 }
@@ -134,14 +135,14 @@ struct StealthOverlayView: View {
     }
 
     private var footer: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 9) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(viewModel.progressText)
                 Text(viewModel.progressDetailText).foregroundStyle(.tertiary)
             }
                 .font(.system(size: 9, design: .monospaced))
                 .foregroundStyle(.secondary)
-                .frame(width: 165, alignment: .leading)
+                .frame(width: 150, alignment: .leading)
             Slider(
                 value: Binding(
                     get: { sliderValue },
@@ -154,15 +155,12 @@ struct StealthOverlayView: View {
             )
             .controlSize(.mini)
             .disabled(viewModel.state != .ready)
-            Text("Updated now")
-                .font(.system(size: 9, design: headerDesign))
-                .foregroundStyle(.tertiary)
             Text("\(Int((viewModel.progressFraction * 100).rounded()))%")
                 .font(.system(size: 9, design: .monospaced))
                 .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 13)
-        .frame(height: 31)
+        .frame(height: 32)
         .background(footerColor)
     }
 
@@ -204,7 +202,7 @@ struct StealthOverlayView: View {
                 .frame(width: 27, height: 25)
                 .contentShape(Rectangle())
         }
-        .background(Color.primary.opacity(0.045), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+        .background(isHovering ? Color.primary.opacity(0.05) : Color.clear, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
     }
 
     private var settings: some View {
@@ -340,17 +338,25 @@ struct StealthOverlayView: View {
 
     private var headerTitle: String {
         switch viewModel.appearance {
-        case .activity: String(localized: "OPERATIONS ACTIVITY")
-        case .report: String(localized: "WEEKLY STATUS REPORT")
+        case .activity: "记录详情"
+        case .report: "周报备注"
         case .console: String(localized: "workspace / activity.log")
         }
     }
 
     private var headerSubtitle: String {
         switch viewModel.appearance {
-        case .activity: String(localized: "Record details and internal notes")
-        case .report: String(localized: "Section notes · Draft autosaved")
+        case .activity: viewModel.progressDetailText.isEmpty ? "内部备注与处理记录" : viewModel.progressDetailText
+        case .report: "本地草稿 · 自动保存"
         case .console: String(localized: "tailing local workspace events")
+        }
+    }
+
+    private var headerIcon: String {
+        switch viewModel.appearance {
+        case .activity: "doc.text.magnifyingglass"
+        case .report: "list.clipboard"
+        case .console: "terminal"
         }
     }
 
