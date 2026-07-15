@@ -70,10 +70,16 @@ final class StealthReaderViewModelTests: XCTestCase {
 
         await viewModel.load(bookID: book.id)
         viewModel.search(for: "目标")
-        XCTAssertEqual(viewModel.searchResultText, "第 1 / 3 项")
+        XCTAssertEqual(
+            viewModel.searchResultText,
+            String(format: String(localized: "Result %lld of %lld"), Int64(1), Int64(3))
+        )
 
         viewModel.search(for: "目标")
-        XCTAssertEqual(viewModel.searchResultText, "第 2 / 3 项")
+        XCTAssertEqual(
+            viewModel.searchResultText,
+            String(format: String(localized: "Result %lld of %lld"), Int64(2), Int64(3))
+        )
     }
 
     func testSynchronizesExternalOfficeProgressWithoutWritingItBack() async throws {
