@@ -89,6 +89,7 @@ private struct OfficeWorkspaceContent: View {
         .onReceive(NotificationCenter.default.publisher(for: .gridnoteOfficePrivacySettingsDidChange)) { _ in
             formulaMaskTask?.cancel()
             formulaBarLineCount = OfficeFormulaMaskSettings.lineCount
+            viewModel.setFormulaBarLineCount(formulaBarLineCount)
             if OfficeFormulaMaskSettings.isEnabled {
                 scheduleFormulaMask()
             } else {
@@ -101,6 +102,7 @@ private struct OfficeWorkspaceContent: View {
             viewModel.apply(template: template)
         }
         .onDisappear { formulaMaskTask?.cancel() }
+        .onAppear { viewModel.setFormulaBarLineCount(formulaBarLineCount) }
     }
 
     private var officeToolbar: some View {
@@ -231,10 +233,11 @@ private struct OfficeWorkspaceContent: View {
         }
         .buttonStyle(.plain)
         .font(.system(size: 10, weight: .semibold))
-        .foregroundStyle(.primary.opacity(isUtilityControlsHovered ? 0.66 : 0.18))
+        .foregroundStyle(.primary.opacity(isUtilityControlsHovered ? 0.72 : 0.22))
         .padding(.horizontal, 8)
         .padding(.vertical, 7)
-        .background(Color.black.opacity(isUtilityControlsHovered ? 0.045 : 0.012), in: Capsule())
+        .background(Color.black.opacity(isUtilityControlsHovered ? 0.055 : 0.015), in: Capsule())
+        .contentShape(Capsule())
         .onHover { isUtilityControlsHovered = $0 }
         .animation(.easeInOut(duration: 0.16), value: isUtilityControlsHovered)
     }
@@ -255,8 +258,8 @@ private struct OfficeWorkspaceContent: View {
                     Text(viewModel.formulaBarValue)
                         .font(.system(size: 13, design: .serif))
                         .foregroundStyle(viewModel.readerTextColor.opacity(viewModel.readerTextOpacity))
-                        .lineLimit(viewModel.isExcerptConcealed ? 1 : formulaBarLineCount)
                         .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
                         .onTapGesture { revealFormulaBar() }
                 } else {
@@ -266,7 +269,8 @@ private struct OfficeWorkspaceContent: View {
                         .onSubmit { viewModel.commitSelectedValue() }
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .clipped()
             .contentTransition(.opacity)
             .animation(.easeInOut(duration: 0.16), value: viewModel.isExcerptConcealed)
         }
@@ -548,6 +552,8 @@ final class OfficeWorkspaceViewModel: ObservableObject {
     private var excerptBookID: UUID?
     private var excerptFormat: BookFormat?
     private var excerptChapters: [ExcerptChapterIndex] = []
+    private var excerptIntraBlockOffset = 0
+    private var formulaBarCharacterLimit = 104
 
     init(context: ModelContext) { self.context = context }
 
@@ -557,7 +563,23 @@ final class OfficeWorkspaceViewModel: ObservableObject {
     var hasFormulaExcerpt: Bool { excerpt.valuesByRow[1] != nil }
     var formulaBarValue: String {
         guard let excerpt = excerpt.valuesByRow[1] else { return editorValue }
-        return isExcerptConcealed ? OfficeExcerptMasker.value(forRow: 1) : excerpt
+        return isExcerptConcealed
+            ? OfficeExcerptMasker.value(forRow: 1)
+            : OfficeExcerptPaginator.page(
+                text: excerpt,
+                startOffset: excerptIntraBlockOffset,
+                characterLimit: formulaBarCharacterLimit
+            ).text
+    }
+    func setFormulaBarLineCount(_ lineCount: Int) {
+        let newLimit = max(1, lineCount) * 52
+        guard newLimit != formulaBarCharacterLimit else { return }
+        formulaBarCharacterLimit = newLimit
+        excerptIntraBlockOffset = min(
+            excerptIntraBlockOffset,
+            max((excerpt.valuesByRow[1]?.count ?? 1) - 1, 0)
+        )
+        objectWillChange.send()
     }
     func select(_ coordinate: OfficeCellCoordinate) {
         commitSelectedValue()
@@ -603,13 +625,32 @@ final class OfficeWorkspaceViewModel: ObservableObject {
 
     func nextExcerpt() {
         revealExcerpt()
+        if let text = excerpt.valuesByRow[1] {
+            let page = OfficeExcerptPaginator.page(
+                text: text,
+                startOffset: excerptIntraBlockOffset,
+                characterLimit: formulaBarCharacterLimit
+            )
+            if let nextOffset = page.nextOffset {
+                excerptIntraBlockOffset = nextOffset
+                objectWillChange.send()
+                persistExcerptProgress()
+                return
+            }
+        }
         guard let next = excerpt.nextBlockIndex else { return }
         applyExcerpt(startingAt: next)
     }
 
     func previousExcerpt() {
         revealExcerpt()
-        applyExcerpt(startingAt: max(excerpt.startBlockIndex - 1, 0))
+        if excerptIntraBlockOffset > 0 {
+            excerptIntraBlockOffset = max(excerptIntraBlockOffset - formulaBarCharacterLimit, 0)
+            objectWillChange.send()
+            persistExcerptProgress()
+            return
+        }
+        applyExcerpt(startingAt: max(excerpt.startBlockIndex - 1, 0), intraBlockOffset: .max)
     }
 
     func concealExcerpt() {
@@ -631,20 +672,26 @@ final class OfficeWorkspaceViewModel: ObservableObject {
             direction: direction
         ) else { return false }
         revealExcerpt()
-        applyExcerpt(startingAt: match)
+        let text = excerptBlocks[match].text
+        let matchOffset = text.range(of: query, options: [.caseInsensitive, .diacriticInsensitive])
+            .map { text.distance(from: text.startIndex, to: $0.lowerBound) } ?? 0
+        applyExcerpt(startingAt: match, intraBlockOffset: matchOffset)
         return true
     }
 
     @discardableResult
     func toggleBookmark() -> Bool? {
         guard let excerptBookID,
-              let locator = locator(forGlobalBlockIndex: excerpt.startBlockIndex),
+              let locator = locator(
+                forGlobalBlockIndex: excerpt.startBlockIndex,
+                intraBlockOffset: excerptIntraBlockOffset
+              ),
               let excerpt = excerpt.valuesByRow[1]
         else { return nil }
         return try? ReadingBookmarkRepository(context: context).toggle(
             bookID: excerptBookID,
             locator: locator,
-            excerpt: excerpt.replacingOccurrences(of: "\n", with: " ").prefix(72).description
+            excerpt: formulaBarValue.replacingOccurrences(of: "\n", with: " ").prefix(72).description
         )
     }
 
@@ -675,17 +722,21 @@ final class OfficeWorkspaceViewModel: ObservableObject {
             excerptFormat = book.format
             let locator = try ReadingProgressRepository(context: context).fetchLocator(bookID: bookID)
             let start: Int
+            let intraBlockOffset: Int
             switch locator {
-            case let .text(chapterID, blockIndex, _), let .epub(chapterID, blockIndex, _):
+            case let .text(chapterID, blockIndex, offset), let .epub(chapterID, blockIndex, offset):
                 start = ExcerptPositionMapper.globalBlockIndex(
                     chapterID: chapterID,
                     blockIndex: blockIndex,
                     chapters: excerptChapters,
                     totalBlockCount: excerptBlocks.count
                 )
-            default: start = 0
+                intraBlockOffset = offset
+            default:
+                start = 0
+                intraBlockOffset = 0
             }
-            applyExcerpt(startingAt: start, persistProgress: false)
+            applyExcerpt(startingAt: start, intraBlockOffset: intraBlockOffset, persistProgress: false)
         } catch {
             excerpt = InjectedExcerpt(startBlockIndex: 0, valuesByRow: [:], nextBlockIndex: nil)
         }
@@ -694,17 +745,33 @@ final class OfficeWorkspaceViewModel: ObservableObject {
     func syncProgressFromFloatingReader() {
         guard let excerptBookID,
               let locator = try? ReadingProgressRepository(context: context).fetchLocator(bookID: excerptBookID),
-              let index = globalBlockIndex(for: locator),
-              index != excerpt.startBlockIndex else { return }
-        applyExcerpt(startingAt: index, persistProgress: false)
+              let index = globalBlockIndex(for: locator) else { return }
+        let intraBlockOffset: Int = switch locator {
+        case let .text(_, _, offset), let .epub(_, _, offset): offset
+        }
+        guard index != excerpt.startBlockIndex || intraBlockOffset != excerptIntraBlockOffset else { return }
+        applyExcerpt(startingAt: index, intraBlockOffset: intraBlockOffset, persistProgress: false)
     }
 
-    private func applyExcerpt(startingAt index: Int, persistProgress: Bool = true) {
+    private func applyExcerpt(startingAt index: Int, intraBlockOffset: Int = 0, persistProgress: Bool = true) {
         excerpt = ExcerptInjector.inject(blocks: excerptBlocks, startBlockIndex: index, rowCount: 1)
+        if intraBlockOffset == .max {
+            let count = excerpt.valuesByRow[1]?.count ?? 0
+            excerptIntraBlockOffset = max(count - formulaBarCharacterLimit, 0)
+        } else {
+            let maximumOffset = max((excerpt.valuesByRow[1]?.count ?? 1) - 1, 0)
+            excerptIntraBlockOffset = min(max(intraBlockOffset, 0), maximumOffset)
+        }
         objectWillChange.send()
-        guard persistProgress,
-              let excerptBookID,
-              let locator = locator(forGlobalBlockIndex: excerpt.startBlockIndex) else { return }
+        if persistProgress { persistExcerptProgress() }
+    }
+
+    private func persistExcerptProgress() {
+        guard let excerptBookID,
+              let locator = locator(
+                forGlobalBlockIndex: excerpt.startBlockIndex,
+                intraBlockOffset: excerptIntraBlockOffset
+              ) else { return }
         guard (try? ReadingProgressRepository(context: context).save(locator: locator, for: excerptBookID)) != nil else { return }
         ReadingProgressSync.post(bookID: excerptBookID, source: .office)
     }
@@ -722,11 +789,11 @@ final class OfficeWorkspaceViewModel: ObservableObject {
         )
     }
 
-    private func locator(forGlobalBlockIndex index: Int) -> ReadingLocator? {
+    private func locator(forGlobalBlockIndex index: Int, intraBlockOffset: Int = 0) -> ReadingLocator? {
         guard let location = ExcerptPositionMapper.location(forGlobalBlockIndex: index, chapters: excerptChapters) else { return nil }
         return excerptFormat == .epub
-            ? .epub(spineItemID: location.chapterID, blockIndex: location.blockIndex, intraBlockOffset: 0)
-            : .text(chapterID: location.chapterID, blockIndex: location.blockIndex, intraBlockOffset: 0)
+            ? .epub(spineItemID: location.chapterID, blockIndex: location.blockIndex, intraBlockOffset: intraBlockOffset)
+            : .text(chapterID: location.chapterID, blockIndex: location.blockIndex, intraBlockOffset: intraBlockOffset)
     }
 
     private func configureExcerptDocument(_ document: BookDocument) {

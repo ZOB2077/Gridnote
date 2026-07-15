@@ -13,11 +13,13 @@ struct SettingsView: View {
 private struct SettingsContent: View {
     @StateObject private var viewModel: SettingsViewModel
     @ObservedObject private var stealthController: StealthOverlayController
+    @ObservedObject private var readerViewModel: StealthReaderViewModel
     @State private var selectedPane: SettingsPane = .floatingReader
 
     init(context: ModelContext, bookID: UUID?, stealthController: StealthOverlayController) {
         _viewModel = StateObject(wrappedValue: SettingsViewModel(context: context, bookID: bookID))
         self.stealthController = stealthController
+        self.readerViewModel = stealthController.viewModel
     }
 
     var body: some View {
@@ -33,8 +35,14 @@ private struct SettingsContent: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(Color(nsColor: .windowBackgroundColor))
-        .frame(minWidth: 680, idealWidth: 760, minHeight: 560, idealHeight: 700)
+        .frame(minWidth: 820, idealWidth: 880, maxWidth: 980, minHeight: 640, idealHeight: 720, maxHeight: 860)
         .task { viewModel.load() }
+        .onChange(of: readerViewModel.textColor) { _, _ in
+            NotificationCenter.default.post(name: .gridnoteReaderSettingsDidChange, object: nil)
+        }
+        .onChange(of: readerViewModel.textOpacity) { _, _ in
+            NotificationCenter.default.post(name: .gridnoteReaderSettingsDidChange, object: nil)
+        }
         .alert("设置", isPresented: Binding(get: { viewModel.message != nil }, set: { if !$0 { viewModel.message = nil } })) {
             Button("确定", role: .cancel) { viewModel.message = nil }
         } message: { Text(viewModel.message ?? "") }
@@ -83,13 +91,60 @@ private struct SettingsContent: View {
             subtitle: "调整文字外观、隐蔽行为与全局操作方式。"
         ) {
             settingsSection("文字外观", systemImage: "textformat") {
-                ColorPicker("文字颜色", selection: $viewModel.textColor, supportsOpacity: false)
-                responsiveSlider("文字透明度", value: $viewModel.textOpacity, range: 0...1) {
+                Picker("面板样式", selection: $readerViewModel.appearance) {
+                    ForEach(StealthAppearance.allCases) { appearance in
+                        Text(verbatim: appearance.title).tag(appearance)
+                    }
+                }
+                .pickerStyle(.segmented)
+                Picker("阅读密度", selection: Binding(
+                    get: { readerViewModel.density },
+                    set: { readerViewModel.applyDensity($0) }
+                )) {
+                    ForEach(FloatingReaderDensity.allCases) { density in
+                        Text(verbatim: density.title).tag(density)
+                    }
+                }
+                .pickerStyle(.segmented)
+                LabeledContent("字体风格") {
+                    Picker("字体风格", selection: $readerViewModel.fontFamily) {
+                        ForEach(ReaderFontFamily.allCases) { family in
+                            Text(family.title).tag(family)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(width: 210)
+                }
+                LabeledContent("字重") {
+                    Picker("字重", selection: $readerViewModel.fontWeight) {
+                        ForEach(ReaderFontWeight.allCases) { weight in
+                            Text(weight.title).tag(weight)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.segmented)
+                    .frame(width: 210)
+                }
+                responsiveSlider("字号", value: $readerViewModel.fontSize, range: 10...28) {
+                    "\(Int($0.rounded())) pt"
+                }
+                responsiveSlider("行距", value: $readerViewModel.lineSpacing, range: 0...12) {
+                    "\(Int($0.rounded())) pt"
+                }
+                responsiveSlider("字距", value: $readerViewModel.letterSpacing, range: -0.5...2, step: 0.1) {
+                    String(format: "%.1f pt", $0)
+                }
+                ColorPicker("文字颜色", selection: $readerViewModel.textColor, supportsOpacity: false)
+                responsiveSlider("文字透明度", value: $readerViewModel.textOpacity, range: 0...1) {
+                    "\(Int(($0 * 100).rounded()))%"
+                }
+                responsiveSlider("背景透明度", value: $readerViewModel.backgroundOpacity, range: 0...1) {
                     "\(Int(($0 * 100).rounded()))%"
                 }
                 helpText("同时应用于悬浮阅读和表格顶部编辑栏。")
-                actionButton("保存文字外观") { viewModel.saveReadingSettings() }
-                    .accessibilityIdentifier("save-reading-settings")
+                Label("所有调整即时生效并自动保存在本机", systemImage: "checkmark.circle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
 
             settingsSection("超级隐蔽模式", systemImage: "eye.slash") {
@@ -98,6 +153,7 @@ private struct SettingsContent: View {
                     set: { stealthController.setSuperStealthMode($0) }
                 ))
                 helpText("移除悬浮窗背景、边框和控制组件，通过菜单栏或全局快捷键操作。")
+                superStealthPreview
                 if stealthController.superStealthMode {
                     Divider()
                     superStealthSizeSlider("最小显示宽度", value: Binding(
@@ -142,6 +198,56 @@ private struct SettingsContent: View {
                 shortcutPicker("显示或隐藏", action: .hide)
             }
         }
+    }
+
+    private var superStealthPreview: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Label("实时预览", systemImage: "eye")
+                    .font(.caption.weight(.semibold))
+                Spacer()
+                Text("\(Int(stealthController.superStealthDisplaySize.width))–\(Int(stealthController.superStealthDisplaySize.maximumWidth)) px")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            GeometryReader { proxy in
+                let upperBound = max(SuperStealthDisplaySize.widthRange.upperBound, 1)
+                let widthRatio = min(max(stealthController.superStealthDisplaySize.maximumWidth / upperBound, 0.32), 1)
+                let previewWidth = max(180, proxy.size.width * widthRatio)
+                let heightRatio = min(max(stealthController.superStealthDisplaySize.height / SuperStealthDisplaySize.heightRange.upperBound, 0.32), 1)
+                let previewHeight = max(30, 58 * heightRatio)
+
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .fill(Color.primary.opacity(0.025))
+                    HStack(spacing: 0) {
+                        Text("项目记录已同步，等待复核。")
+                            .font(.system(
+                                size: min(readerViewModel.fontSize, 17),
+                                weight: readerViewModel.fontWeight.swiftUIWeight,
+                                design: readerViewModel.fontFamily.design
+                            ))
+                            .tracking(readerViewModel.letterSpacing)
+                            .foregroundStyle(readerViewModel.textColor.opacity(readerViewModel.textOpacity))
+                            .fixedSize(horizontal: true, vertical: true)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal, 12)
+                    .frame(width: previewWidth, height: previewHeight, alignment: .leading)
+                    .clipped()
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .stroke(style: StrokeStyle(lineWidth: 1, dash: [4, 3]))
+                            .foregroundStyle(Color.secondary.opacity(0.28))
+                    }
+                    .padding(8)
+                }
+            }
+            .frame(height: 76)
+            helpText("虚线范围模拟纯文字窗口；调整宽度、高度、字体和透明度时会立即更新。")
+        }
+        .padding(12)
+        .background(Color.primary.opacity(0.025), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 
     private var officeDisguisePage: some View {

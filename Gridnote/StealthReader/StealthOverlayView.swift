@@ -110,8 +110,7 @@ struct StealthOverlayView: View {
                         .tracking(viewModel.letterSpacing)
                         .lineSpacing(viewModel.lineSpacing)
                         .foregroundStyle(viewModel.textColor.opacity(viewModel.textOpacity))
-                        .lineLimit(controller.superStealthMode ? 1 : nil)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .fixedSize(horizontal: controller.superStealthMode, vertical: true)
                         .textSelection(.enabled)
                         .padding(.horizontal, 17)
                         .padding(.vertical, controller.superStealthMode ? 4 : 15)
@@ -207,15 +206,11 @@ struct StealthOverlayView: View {
     }
 
     private var settings: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 3) {
-                Text("阅读外观").font(.headline)
-                Text("调整会立即应用并保存在本机").font(.caption).foregroundStyle(.secondary)
+                Text("快速调整").font(.headline)
+                Text("完整选项请在主窗口设置中调整").font(.caption).foregroundStyle(.secondary)
             }
-            Picker("Appearance", selection: $viewModel.appearance) {
-                ForEach(StealthAppearance.allCases) { Text(verbatim: $0.title).tag($0) }
-            }
-            .pickerStyle(.segmented)
             Picker("Reading density", selection: Binding(
                 get: { viewModel.density },
                 set: { viewModel.applyDensity($0) }
@@ -226,33 +221,11 @@ struct StealthOverlayView: View {
             }
             .pickerStyle(.segmented)
             Divider()
-            LabeledContent("字体风格") {
-                Picker("字体风格", selection: $viewModel.fontFamily) {
-                    ForEach(ReaderFontFamily.allCases) { Text($0.title).tag($0) }
-                }
-                .labelsHidden()
-                .frame(width: 170)
-            }
-            LabeledContent("字重") {
-                Picker("字重", selection: $viewModel.fontWeight) {
-                    ForEach(ReaderFontWeight.allCases) { Text($0.title).tag($0) }
-                }
-                .labelsHidden()
-                .pickerStyle(.segmented)
-                .frame(width: 170)
-            }
             settingSlider("Font size", value: $viewModel.fontSize, range: 10...28, format: "%.0f pt")
-            settingSlider("Line spacing", value: $viewModel.lineSpacing, range: 0...12, format: "%.0f pt")
-            settingSlider("字距", value: $viewModel.letterSpacing, range: -0.5...2, format: "%.1f pt")
             ColorPicker("Text color", selection: $viewModel.textColor, supportsOpacity: false)
-            settingSlider("Text opacity", value: $viewModel.textOpacity, range: 0...1, format: "%.0f%%", multiplier: 100)
-            settingSlider("Background opacity", value: $viewModel.backgroundOpacity, range: 0...1, format: "%.0f%%", multiplier: 100)
-            Text("Page size follows the floating window dimensions.")
-                .font(.caption)
-                .foregroundStyle(.secondary)
         }
         .padding(20)
-        .frame(width: 380)
+        .frame(width: 350)
     }
 
     private var searchBar: some View {

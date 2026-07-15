@@ -447,12 +447,12 @@ final class StealthReaderViewModel: ObservableObject {
         // CJK glyphs are approximately one em wide. Using a narrower average here
         // causes SwiftUI to truncate the final glyphs in one-line stealth mode.
         let estimatedCharacterWidth = maximumLines == nil
-            ? max(fontSize * 0.68, 7)
+            ? max(fontSize * 0.98 + max(letterSpacing, 0), 8)
             : max(fontSize * 1.08, 8)
-        let estimatedLineHeight = max(fontSize + lineSpacing + 7, 16)
+        let estimatedLineHeight = max(fontSize + lineSpacing + 8, 17)
         let charactersPerLine = max(8, Int(usableWidth / estimatedCharacterWidth))
         let fittedLines = max(1, Int(usableHeight / estimatedLineHeight))
-        let visibleLines = maximumLines.map { min(fittedLines, max($0, 1)) } ?? max(3, fittedLines)
+        let visibleLines = maximumLines.map { min(fittedLines, max($0, 1)) } ?? max(2, fittedLines - 1)
         let minimumCapacity = maximumLines == nil ? 80 : 8
         let fittedCapacity = min(max(charactersPerLine * visibleLines, minimumCapacity), 1600)
 

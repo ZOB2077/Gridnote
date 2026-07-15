@@ -2,6 +2,20 @@
 
 All notable changes are documented in this file. Gridnote follows [Semantic Versioning](https://semver.org/) for public releases where practical.
 
+## [0.1.6] - 2026-07-15
+
+### Added
+
+- Added a live Super Stealth size and typography preview to the main settings window.
+- Added continuous intra-paragraph pagination and exact progress persistence to the office formula-bar reader.
+
+### Changed
+
+- Consolidated complete reader appearance controls in the main settings window and reduced the floating popover to three quick adjustments.
+- Made normal floating pagination more conservative for CJK text and removed line-limit truncation from reading surfaces.
+- Raised safe minimum sizes for the main window, library, settings, and normal floating panel.
+- Balanced office utility controls at 22% idle emphasis and 72% hover emphasis.
+
 ## [0.1.5] - 2026-07-15
 
 ### Fixed
@@ -87,3 +101,4 @@ All notable changes are documented in this file. Gridnote follows [Semantic Vers
 [0.1.3]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.3
 [0.1.4]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.4
 [0.1.5]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.5
+[0.1.6]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.6

@@ -12,7 +12,7 @@ struct AppShellView: View {
 
     var body: some View {
         OfficeWorkspaceView()
-        .frame(minWidth: 720, minHeight: 480)
+        .frame(minWidth: 980, minHeight: 620)
         .navigationTitle(windowTitle)
         .toolbar {
             ToolbarItemGroup {

@@ -4,6 +4,20 @@ import XCTest
 
 @MainActor
 final class OfficeGridTests: XCTestCase {
+    func testOfficeExcerptPaginatorContinuesWithoutEllipsisOrMissingText() throws {
+        let text = String(repeating: "甲乙丙丁戊己庚辛壬癸", count: 20)
+        let first = OfficeExcerptPaginator.page(text: text, startOffset: 0, characterLimit: 52)
+        let second = OfficeExcerptPaginator.page(
+            text: text,
+            startOffset: try XCTUnwrap(first.nextOffset),
+            characterLimit: 52
+        )
+
+        XCTAssertFalse(first.text.contains("…"))
+        XCTAssertEqual(first.text + second.text, String(text.prefix(first.text.count + second.text.count)))
+        XCTAssertEqual(second.startOffset, first.text.count)
+    }
+
     func testCoordinateNamesAndSnapshotRoundTrip() throws {
         XCTAssertEqual(OfficeCellCoordinate(row: 0, column: 0).name, "A1")
         XCTAssertEqual(OfficeCellCoordinate(row: 4, column: 26).name, "AA5")

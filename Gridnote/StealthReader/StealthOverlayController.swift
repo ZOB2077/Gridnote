@@ -408,9 +408,9 @@ final class StealthOverlayController: NSObject, NSWindowDelegate, ObservableObje
             panel.maxSize = NSSize(width: superStealthDisplaySize.maximumWidth, height: SuperStealthDisplaySize.heightRange.upperBound)
             applyPanelSize(size: NSSize(width: superStealthDisplaySize.width, height: superStealthDisplaySize.height), to: panel)
         } else {
-            panel.minSize = NSSize(width: 420, height: 140)
+            panel.minSize = NSSize(width: 520, height: 190)
             panel.maxSize = NSSize(width: 1400, height: 720)
-            let size = NSSize(width: max(panel.frame.width, 420), height: max(panel.frame.height, 140))
+            let size = NSSize(width: max(panel.frame.width, 520), height: max(panel.frame.height, 190))
             applyPanelSize(size: size, to: panel)
         }
     }

@@ -9,7 +9,7 @@
 
 Gridnote keeps books, reading progress, aliases, bookmarks, and settings on the Mac. Its primary workspace resembles a compact data workbook populated exclusively with synthetic demo records, while the floating reader provides a minimal, resizable reading surface for short sessions. It is designed for personal reading, not as an Excel replacement or a content distribution service.
 
-**Status:** `v0.1.5` personal-Mac preview. The application is functional and packaged for personal use without notarization.
+**Status:** `v0.1.6` personal-Mac preview. The application is functional and packaged for personal use without notarization.
 
 ## Highlights
 

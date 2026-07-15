@@ -1,4 +1,4 @@
-# Gridnote v0.1.5 Release Notes
+# Gridnote v0.1.6 Release Notes
 
 ## Included
 
@@ -21,6 +21,8 @@
 - A redesigned native settings window with complete Chinese localization and bounded controls.
 - Refined toolbar symbols, floating controls, and an updated macOS application icon.
 - A quieter record-detail presentation and neutral workspace-style menu-bar controller for stronger office disguise.
+- Consolidated reader appearance controls, a live Super Stealth preview, safer window minimum sizes, and balanced hover visibility for office utility controls.
+- Continuous formula-bar pagination within long paragraphs, with precise intra-paragraph progress and no line-limit ellipsis on reading surfaces.
 - Default `F7` previous, `F8` next, and `F9` show/hide shortcuts.
 - Dense phone-rental disguise tables built from deduplicated public model names and fully synthetic order, device, specification, logistics, status, and amount fields.
 - Repository safeguards that reject tracked spreadsheet, database, and business-report artifacts.

@@ -51,7 +51,7 @@ private struct LibraryContent: View {
                 ContentUnavailableView("Select a book", systemImage: "books.vertical")
             }
         }
-        .frame(minWidth: 760, minHeight: 480)
+        .frame(minWidth: 820, minHeight: 560)
         .task { viewModel.reload() }
         .fileImporter(isPresented: $viewModel.isRelinkerPresented, allowedContentTypes: ImportService.supportedContentTypes) { result in
             if case .success(let url) = result { viewModel.relink(to: url) }

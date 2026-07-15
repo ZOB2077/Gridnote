@@ -16,6 +16,29 @@ struct ExcerptBlockLocation: Equatable {
     let blockIndex: Int
 }
 
+struct OfficeExcerptPage: Equatable {
+    let text: String
+    let startOffset: Int
+    let nextOffset: Int?
+}
+
+enum OfficeExcerptPaginator {
+    static func page(text: String, startOffset: Int, characterLimit: Int) -> OfficeExcerptPage {
+        guard !text.isEmpty else { return OfficeExcerptPage(text: "", startOffset: 0, nextOffset: nil) }
+        let safeLimit = max(characterLimit, 1)
+        let safeStart = min(max(startOffset, 0), max(text.count - 1, 0))
+        let start = text.index(text.startIndex, offsetBy: safeStart)
+        let end = text.index(start, offsetBy: safeLimit, limitedBy: text.endIndex) ?? text.endIndex
+        let pageText = String(text[start..<end])
+        let endOffset = safeStart + pageText.count
+        return OfficeExcerptPage(
+            text: pageText,
+            startOffset: safeStart,
+            nextOffset: endOffset < text.count ? endOffset : nil
+        )
+    }
+}
+
 enum ExcerptPositionMapper {
     static func globalBlockIndex(
         chapterID: String,
