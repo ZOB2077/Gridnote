@@ -111,6 +111,7 @@ struct StealthOverlayView: View {
                         .lineSpacing(viewModel.lineSpacing)
                         .foregroundStyle(viewModel.textColor.opacity(viewModel.textOpacity))
                         .lineLimit(controller.superStealthMode ? 1 : nil)
+                        .fixedSize(horizontal: false, vertical: true)
                         .textSelection(.enabled)
                         .padding(.horizontal, 17)
                         .padding(.vertical, controller.superStealthMode ? 4 : 15)

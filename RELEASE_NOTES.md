@@ -1,4 +1,4 @@
-# Gridnote v0.1.4 Release Notes
+# Gridnote v0.1.5 Release Notes
 
 ## Included
 
@@ -13,7 +13,7 @@
 - Reader font family, font size, weight, letter spacing, line spacing, text color, opacity, and system/paper/dark themes.
 - A compact menu-bar control center, freely movable floating reader without edge snapping, and Super Stealth mode.
 - CJK-safe one-line pagination that expands the text range without adding tail ellipses.
-- Pixel-measured multi-line pagination that follows the actual floating-window width, height, font, line spacing, and letter spacing.
+- Capacity-based multi-line pagination restored for the normal floating panel, with intrinsic text layout that avoids adding a tail ellipsis.
 - Pixel-measured Super Stealth pages with adaptive width, a configurable maximum width, semantic punctuation boundaries, and continuous pages without repeated context.
 - Instant Super Stealth page changes and a subtle 80 ms fade in the normal floating panel, with no sliding text or direction arrows.
 - Bidirectional progress synchronization between office formula-bar navigation and the floating reader.

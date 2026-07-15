@@ -2,6 +2,13 @@
 
 All notable changes are documented in this file. Gridnote follows [Semantic Versioning](https://semver.org/) for public releases where practical.
 
+## [0.1.5] - 2026-07-15
+
+### Fixed
+
+- Rolled the normal floating panel back to the established capacity-based pagination after the multi-line pixel paginator reintroduced trailing ellipses.
+- Forced normal floating text to keep its intrinsic vertical layout so constrained content clips cleanly instead of appending an ellipsis.
+
 ## [0.1.4] - 2026-07-15
 
 ### Added
@@ -79,3 +86,4 @@ All notable changes are documented in this file. Gridnote follows [Semantic Vers
 [0.1.2]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.2
 [0.1.3]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.3
 [0.1.4]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.4
+[0.1.5]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.5
