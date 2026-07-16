@@ -2,6 +2,20 @@
 
 All notable changes are documented in this file. Gridnote follows [Semantic Versioning](https://semver.org/) for public releases where practical.
 
+## [1.0.1] - 2026-07-16
+
+### Fixed
+
+- Moved the production SwiftData database from the shared `Application Support/default.store` path to the app-specific `Application Support/com.gridnote.app/Gridnote.store` path.
+- Added a one-time, read-only SQLite snapshot migration for compatible v1.0.0 stores, with schema and integrity validation before activation.
+- Prevented unit-test host launches from opening or modifying the production database.
+- Added regression coverage for production-path isolation, test-host isolation, directory creation, and legacy-book migration.
+
+### Upgrade Notes
+
+- Existing v1.0.0 data is migrated automatically when its legacy Gridnote schema remains readable.
+- Migration failures stop initialization instead of silently replacing the library with a new empty store.
+
 ## [1.0.0] - 2026-07-15
 
 ### Release
@@ -132,3 +146,4 @@ All notable changes are documented in this file. Gridnote follows [Semantic Vers
 [0.1.7]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.7
 [0.1.8]: https://github.com/ZOB2077/Gridnote/releases/tag/v0.1.8
 [1.0.0]: https://github.com/ZOB2077/Gridnote/releases/tag/v1.0.0
+[1.0.1]: https://github.com/ZOB2077/Gridnote/releases/tag/v1.0.1
