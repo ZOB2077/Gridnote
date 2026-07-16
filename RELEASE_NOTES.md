@@ -1,6 +1,15 @@
-# Gridnote v1.0.0
+# Gridnote v1.0.1
 
-Gridnote v1.0.0 is the first stable personal-Mac release. It promotes the verified v0.1.8 application baseline without adding untested behavior.
+Gridnote v1.0.1 is a data-safety update for the stable personal-Mac release.
+
+## 本次修复
+
+- 将 SwiftData 数据库从系统共享的 `Application Support/default.store` 移至 Gridnote 专属目录。
+- 首次升级时通过只读 SQLite 快照自动迁移仍可读取的 v1.0.0 书库。
+- 迁移完成前校验 Gridnote 模型表和数据库完整性；迁移失败时停止初始化，不创建空书库掩盖错误。
+- 单元测试宿主强制使用内存数据库，不再接触用户的真实书库。
+
+建议所有 v1.0.0 用户升级。此修复不会删除原始 TXT 或 EPUB 文件。
 
 ## 功能预览
 
